@@ -45,4 +45,4 @@ This is also a tutorial for junior researchers interested in contemporary change
 - (AnyChange) Segment Any Change, arxiv 2024 [[`Paper`](https://arxiv.org/abs/2402.01188)]
 
 ### License
-This project is under the CC-BY-NC 4.0 license. See LICENSE for details.
+This project is under the CC-BY-NC 4.0 license. See [LICENSE](https://github.com/Z-Zheng/pytorch-change-models/blob/main/LICENSE) for details.
