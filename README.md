@@ -1,17 +1,28 @@
-## torchange - A Unified Change Detection Benchmark Library
+## torchange - A Unified Change Representation Learning Benchmark Library
 
-torchange aims to provide out-of-box contemporary change detection model implementations, in pursuit of benchmarking and reproducibility. 
-
+torchange aims to provide out-of-box contemporary spatiotemporal change model implementations, standard metrics, and datasets, in pursuit of benchmarking and reproducibility. 
 
 >This project is still under development. Other repositories would be gradually merged into ```torchange```.
 
 > The ```torchange``` API is in beta and may change in the near future.
 
 > Note: ```torchange``` is designed to provide straightforward implementations, thus we will adopt a single file for each algorithm without any modular encapsulation.
-If you find any bugs, please post them in the issue, since algorithms released before 2024 will be transferred here from our internal codebase.
-If possible, be patient for new releases and bug fixes, since this is a huge burden for a single maintainer.
+Algorithms released before 2024 will be transferred here from our internal codebase.
+If you encounter any bugs, please report them in the issue section. Please be patient with new releases and bug fixes, as this is a significant burden for a single maintainer. 
+Technical consultations are only accepted via email inquiry.
 
 > Our default training engine is [ever](https://github.com/Z-Zheng/ever/). 
+
+### News
+
+- 2024/06, we launch the project of ``torchange``.
+
+### Features
+
+- Out-of-box and straightforward model implementations
+- Highly-optimized implementations, e.g., multi-gpu sync dice loss.
+- Multi-gpu metric computation and score tracker, supporting wandb.
+- Including the latest research advancements in ``Change``, not just architecture games.
 
 
 ### Model zoo (in progress)
