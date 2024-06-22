@@ -33,22 +33,6 @@ def bitemporal_forward(module, x):
 
 
 @torch.cuda.amp.autocast(dtype=torch.float32)
-def sem_sim_loss(s1_logit, s2_logit, gt_masks):
-    c_gt = gt_masks[-1].to(torch.float32)
-    target = torch.where(c_gt > 0, -1 * torch.ones_like(c_gt), torch.ones_like(c_gt))
-
-    s1_p = s1_logit.log_softmax(dim=1).exp()
-    s2_p = s2_logit.log_softmax(dim=1).exp()
-
-    s1_p = rearrange(s1_p, 'b c h w -> (b h w) c')
-    s2_p = rearrange(s2_p, 'b c h w -> (b h w) c')
-    target = rearrange(target, 'b h w -> (b h w)')
-
-    loss = F.cosine_embedding_loss(s1_p, s2_p, target)
-    return loss
-
-
-@torch.cuda.amp.autocast(dtype=torch.float32)
 def mse_loss(s1_logit, s2_logit, gt_masks):
     c_gt = gt_masks[-1].to(torch.float32).unsqueeze(1)
 
@@ -87,6 +71,8 @@ def loss(
         's2_dice_loss': s2_dice,
         'c_dice_loss': c_dice,
         'c_bce_loss': c_bce,
+        # to improve semantic-change consistency, this is a well-known issue in ChangeMask-like SCD methods.
+        # original implementation doesn't have this objective.
         'sim_loss': sim_loss
     }
 
