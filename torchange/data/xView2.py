@@ -130,20 +130,3 @@ class xView2(BitemporalDataset, er.ERDataset):
             training=True,
             ignore_t2_bg=False,
         ))
-
-
-if __name__ == '__main__':
-    import albumentations as A
-    import albumentations.pytorch
-
-    dataset = xView2(dict(
-        dataset_dir=['xView2/train', 'xView2/tier3'],
-        crop_size=512,
-        transforms=A.Compose([
-            A.D4(),
-            A.Normalize(),
-            A.pytorch.ToTensorV2(),
-        ]),
-        training=True,
-    ))
-    print(len(dataset))
