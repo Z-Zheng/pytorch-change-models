@@ -626,9 +626,6 @@ class ChangeStar2(er.ERModule):
                         't1_semantic_prediction': p1.argmax(dim=1),
                         't2_semantic_prediction': p2.argmax(dim=1),
                     })
-            elif isinstance(predictions, dict) and predictions['type'] == 'bcd':
-                if self.config.postproc_sn8_flooded_road:
-                    predictions = self.postproc_sn8_flooded_road(predictions)
 
         return predictions
 
