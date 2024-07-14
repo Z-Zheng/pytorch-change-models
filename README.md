@@ -66,3 +66,5 @@ This is also a tutorial for junior researchers interested in contemporary change
 
 ### License
 This project is under the CC-BY-NC 4.0 license. See [LICENSE](https://github.com/Z-Zheng/pytorch-change-models/blob/main/LICENSE) for details.
+
+![visitors](https://visitor-badge.laobi.icu/badge?page_id=Z-Zheng/pytorch-change-models)
