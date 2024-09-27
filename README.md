@@ -60,7 +60,7 @@ This is also a tutorial for junior researchers interested in contemporary change
 
 
 #### 3.0 zero-shot change detection
-- (AnyChange) Segment Any Change, arxiv 2024 [[`Paper`](https://arxiv.org/abs/2402.01188)]
+- (AnyChange) Segment Any Change, NeurIPS 2024 [[`Paper`](https://arxiv.org/abs/2402.01188)], [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/blob/main/torchange/models/segment_any_change)]
 - (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, arxiv 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)]
 
 
