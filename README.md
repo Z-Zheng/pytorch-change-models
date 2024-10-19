@@ -51,17 +51,17 @@ This is also a tutorial for junior researchers interested in contemporary change
 - (STAR) Change is Everywhere: Single-Temporal Supervised Object Change Detection in Remote Sensing Imagery, ICCV 2021. [[`Paper`](https://arxiv.org/abs/2108.07002)], [[`Project`](https://zhuozheng.top/changestar/)], [[`Code`](https://github.com/Z-Zheng/ChangeStar)]
 - (G-STAR) Single-Temporal Supervised Learning for Universal Remote Sensing Change Detection, IJCV 2024. [[`Paper`](https://link.springer.com/article/10.1007/s11263-024-02141-4)], [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/blob/main/torchange/models/changestar2.py)]
 - (Changen) Scalable Multi-Temporal Remote Sensing Change Data Generation via Simulating Stochastic Change Process, ICCV 2023 [[`Paper`](https://arxiv.org/pdf/2309.17031)], [[`Code`](https://github.com/Z-Zheng/Changen)]
-- (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, IEEE TPAMI 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)], [[`Code`]](https://github.com/Z-Zheng/pytorch-change-models/tree/main/torchange/models/changen2)
+- (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, IEEE TPAMI 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)]， [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/tree/main/torchange/models/changen2)]
 
 
 #### 2.1 change data synthesis from single-temporal data
 - (Changen) Scalable Multi-Temporal Remote Sensing Change Data Generation via Simulating Stochastic Change Process, ICCV 2023 [[`Paper`](https://arxiv.org/pdf/2309.17031)], [[`Code`](https://github.com/Z-Zheng/Changen)]
-- (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, IEEE TPAMI 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)], [[`Code`]](https://github.com/Z-Zheng/pytorch-change-models/tree/main/torchange/models/changen2)
+- (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, IEEE TPAMI 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)]， [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/tree/main/torchange/models/changen2)]
 
 
 #### 3.0 zero-shot change detection
 - (AnyChange) Segment Any Change, NeurIPS 2024 [[`Paper`](https://arxiv.org/abs/2402.01188)], [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/blob/main/torchange/models/segment_any_change)]
-- (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, IEEE TPAMI 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)]， [[`Code`]](https://github.com/Z-Zheng/pytorch-change-models/tree/main/torchange/models/changen2)
+- (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, IEEE TPAMI 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)]， [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/tree/main/torchange/models/changen2)]
 
 
 ### License
