@@ -20,8 +20,8 @@ class LEVIRCD(BitemporalDataset, er.ERDataset):
             A_image_fps = A_image_fps[:N]
             er.info(f'use subsample ratio of {self.cfg.subsample_ratio}, {split} training samples')
 
-        B_image_fps = [fp.replace('A', 'B') for fp in A_image_fps]
-        gt_fps = [fp.replace('A', 'label') for fp in A_image_fps]
+        B_image_fps = [fp.replace('/A/', '/B/') for fp in A_image_fps]
+        gt_fps = [fp.replace('/A', '/label') for fp in A_image_fps]
 
         super().__init__(
             t1_image_fps=A_image_fps,
