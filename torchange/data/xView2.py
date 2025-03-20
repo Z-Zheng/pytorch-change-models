@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 import ever as er
 
-from torchange.data.bitemporal import BitemporalDataset
+from torchange.data.bitemporal import BitemporalDataset, data_transform
 from skimage.io import imread
 import torch
 from tqdm import tqdm
@@ -102,7 +102,7 @@ class xView2(BitemporalDataset, er.ERDataset):
                 msk2[msk2 == 0] = 255
             data['t2_mask'] = msk2
 
-        data = self.data_transform(data)
+        data = data_transform(self.t, data)
 
         img = torch.cat([data['image'], data['t2_image']], dim=0)
 

@@ -4,12 +4,20 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-from torch.utils.data import Dataset
-from skimage.io import imread
-import albumentations as A
-import torch
 from pathlib import Path
+
+import albumentations as A
+import ever as er
 import numpy as np
+import torch
+from skimage.io import imread
+from torch.utils.data import Dataset
+from datasets import load_dataset, concatenate_datasets
+from typing import Dict
+
+PRE = 'pre'
+TWISE = 'temporalwise'
+POST = 'post'
 
 
 class BinarizeMask(A.DualTransform):
@@ -30,11 +38,43 @@ def check_name(t1_image_name, other):
     assert t1_image_name == other, f'expected {t1_image_name}, but {other}'
 
 
-class BitemporalDataset(Dataset):
-    PRE = 'pre'
-    TWISE = 'temporalwise'
-    POST = 'post'
+def to_bitemporal_compose(compose):
+    assert isinstance(compose, A.Compose)
 
+    return A.Compose(compose.transforms, additional_targets={
+        't2_image': 'image',
+        't2_mask': 'mask',
+        'change': 'mask'
+    })
+
+
+def data_transform(T, data) -> Dict:
+    if isinstance(T, dict):
+        data = T[PRE](**data)
+
+        if not isinstance(T[TWISE], A.NoOp):
+            if 'mask' in data:
+                t1_data = {'image': data['image'], 'mask': data['mask']}
+            else:
+                t1_data = {'image': data['image']}
+            t1_data = T[TWISE](**t1_data)
+            data.update(t1_data)
+
+            if 't2_mask' in data:
+                t2_data = {'image': data['t2_image'], 'mask': data['t2_mask']}
+            else:
+                t2_data = {'image': data['t2_image']}
+            t2_data = T[TWISE](**t2_data)
+            t2_data = {f't2_{k}': v for k, v in t2_data.items()}
+            data.update(t2_data)
+
+        data = T[POST](**data)
+    else:
+        data = T(data)
+    return data
+
+
+class BitemporalDataset(Dataset):
     def __init__(
             self,
             t1_image_fps,
@@ -54,17 +94,17 @@ class BitemporalDataset(Dataset):
         self.name_checker = name_checker
 
         self.t = {
-            self.PRE: A.NoOp(),
-            self.TWISE: A.NoOp(),
-            self.POST: A.NoOp(),
+            PRE: A.NoOp(),
+            TWISE: A.NoOp(),
+            POST: A.NoOp(),
         }
         if isinstance(transform, A.Compose):
-            self.t[self.POST] = self.to_bitemporal_compose(transform)
+            self.t[POST] = to_bitemporal_compose(transform)
         elif isinstance(transform, dict):
             for k, v in transform.items():
-                assert k in [self.PRE, self.TWISE, self.POST]
+                assert k in [PRE, TWISE, POST]
                 if isinstance(v, A.Compose):
-                    v = self.to_bitemporal_compose(v)
+                    v = to_bitemporal_compose(v)
                 self.t[k] = v
         else:
             self.t = transform
@@ -96,7 +136,7 @@ class BitemporalDataset(Dataset):
             cmask = imread(self.change_fps[idx])
             data['change'] = cmask
 
-        data = self.data_transform(data)
+        data = data_transform(self.t, data)
 
         img = torch.cat([data['image'], data['t2_image']], dim=0)
 
@@ -120,37 +160,93 @@ class BitemporalDataset(Dataset):
     def __len__(self):
         return len(self.t1_image_fps)
 
-    def data_transform(self, data):
-        if isinstance(self.t, dict):
-            data = self.t[self.PRE](**data)
 
-            if not isinstance(self.t[self.TWISE], A.NoOp):
-                if 'mask' in data:
-                    t1_data = {'image': data['image'], 'mask': data['mask']}
-                else:
-                    t1_data = {'image': data['image']}
-                t1_data = self.t[self.TWISE](**t1_data)
-                data.update(t1_data)
+@er.registry.DATASET.register()
+class HFBitemporalDataset(er.ERDataset):
+    def __init__(self, config):
+        super().__init__(config)
+        ds = []
+        for s in self.cfg.splits:
+            d = load_dataset(self.cfg.hf_repo_name, split=s)
+            ds.append(d)
+        hfd = concatenate_datasets(ds) if len(ds) > 1 else ds[0]
+        self.hfd = hfd.with_format('numpy')
 
-                if 't2_mask' in data:
-                    t2_data = {'image': data['t2_image'], 'mask': data['t2_mask']}
-                else:
-                    t2_data = {'image': data['t2_image']}
-                t2_data = self.t[self.TWISE](**t2_data)
-                t2_data = {f't2_{k}': v for k, v in t2_data.items()}
-                data.update(t2_data)
-
-            data = self.t[self.POST](**data)
+        transform = self.cfg.transform
+        self.t = {
+            PRE: A.NoOp(),
+            TWISE: A.NoOp(),
+            POST: A.NoOp(),
+        }
+        if isinstance(transform, A.Compose):
+            self.t[POST] = to_bitemporal_compose(transform)
+        elif isinstance(transform, dict):
+            for k, v in transform.items():
+                assert k in [PRE, TWISE, POST]
+                if isinstance(v, A.Compose):
+                    v = to_bitemporal_compose(v)
+                self.t[k] = v
         else:
-            data = self.t(data)
-        return data
+            self.t = transform
 
-    @staticmethod
-    def to_bitemporal_compose(compose):
-        assert isinstance(compose, A.Compose)
+    def _slice_data(self, data, tile_slice):
+        if tile_slice is None:
+            return data
 
-        return A.Compose(compose.transforms, additional_targets={
-            't2_image': 'image',
-            't2_mask': 'mask',
-            'change': 'mask'
-        })
+        x1, y1, x2, y2 = tile_slice
+        return data[y1:y2, x1:x2]
+
+    def compute_tile_slice(self, idx):
+        return idx, None
+
+    def __getitem__(self, idx):
+        idx, tile_slice = self.compute_tile_slice(idx)
+
+        example = self.hfd[idx]
+        img1 = self._slice_data(example['t1_image'], tile_slice)
+        img2 = self._slice_data(example['t2_image'], tile_slice)
+
+        data = {
+            'image': img1,
+            't2_image': img2
+        }
+
+        if 't1_mask' in example:
+            data['mask'] = self._slice_data(example['t1_mask'], tile_slice)
+
+        if 't2_mask' in example:
+            data['t2_mask'] = self._slice_data(example['t2_mask'], tile_slice)
+
+        if 'change_mask' in example:
+            data['change'] = self._slice_data(example['change_mask'], tile_slice)
+
+        data = data_transform(self.t, data)
+
+        img = torch.cat([data['image'], data['t2_image']], dim=0)
+
+        masks = []
+        if 'mask' in data:
+            masks.append(data['mask'])
+
+        if 't2_mask' in data:
+            masks.append(data['t2_mask'])
+
+        if 'change' in data:
+            masks.append(data['change'])
+
+        ann = dict(
+            masks=masks,
+            image_filename=str(example['image_name'])
+        )
+
+        return img, ann
+
+    def __len__(self):
+        return len(self.hfd)
+
+    def set_default_config(self):
+        self.cfg.update(dict(
+            hf_repo_name=None,
+            splits=[],
+            transform=None,
+        ))

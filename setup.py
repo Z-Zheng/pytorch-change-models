@@ -20,6 +20,7 @@ install_requires = [
     'einops',
     'segmentation-models-pytorch',
     'timm',
+    'datasets[vision]',
 ]
 setup(
     name='torchange',
@@ -42,7 +43,7 @@ setup(
     ],
     url='https://github.com/Z-Zheng/pytorch-change-models',
     author='Zhuo Zheng',
-    author_email='zhuozheng@stanford.edu',
+    author_email='zhuozheng@cs.stanford.edu',
     license='CC-BY-NC 4.0',
     setup_requires=[],
     tests_require=[],
