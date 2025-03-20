@@ -1,3 +1,9 @@
+# Copyright (c) Zhuo Zheng and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 from skimage.segmentation import find_boundaries
 from .segment_anything.utils.amg import (
     area_from_rle,
