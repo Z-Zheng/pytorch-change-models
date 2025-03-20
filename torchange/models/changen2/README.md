@@ -24,6 +24,18 @@ Changen2 pre-trained models exhibit superior zero-shot performance (narrowing th
 
 ## Get Started (TBD)
 
+### Change Event Simulation
+```python
+from torchange.models.changen2 import change_event_simulation as ces
+
+# Changen2, Sec. 3.2, Change Event Simulation
+ces.add_object  # Object Creation
+ces.remove_object  # Object Removal
+ces.random_transition  # Attribute Edit
+# Changen2, Sec. 3.5, Fig.7
+ces.next_time_contour_gen
+```
+
 ### Resolution-Scalable DiT models
 
 ```python
@@ -43,16 +55,23 @@ from torchange.models.changen2 import changestar_1x256
 
 
 ## Citation
-If you find our project helpful, please cite our paper:
+If you find our project helpful, we would greatly appreciate it if you could kindly cite our papers:
 ```
-@article{zheng2024changen2,
+@article{changen2,
   author={Zheng, Zhuo and Ermon, Stefano and Kim, Dongjun and Zhang, Liangpei and Zhong, Yanfei},
   journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
   title={Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model}, 
-  year={2024},
-  volume={},
-  number={},
-  pages={1-17},
+  year={2025},
+  volume={47},
+  number={2},
+  pages={725-741},
   doi={10.1109/TPAMI.2024.3475824}
+}
+@inproceedings{changen,
+  title={Scalable multi-temporal remote sensing change data generation via simulating stochastic change process},
+  author={Zheng, Zhuo and Tian, Shiqi and Ma, Ailong and Zhang, Liangpei and Zhong, Yanfei},
+  booktitle={Proceedings of the IEEE/CVF International Conference on Computer Vision},
+  pages={21818--21827},
+  year={2023}
 }
 ```

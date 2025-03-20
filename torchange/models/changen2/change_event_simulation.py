@@ -1,4 +1,6 @@
 from skimage.measure import label, regionprops
+from skimage.segmentation import find_boundaries
+from skimage.morphology import binary_opening, dilation, square
 import numpy as np
 import random
 
@@ -129,6 +131,18 @@ def remove_instance(ins_mask, p=0.1):
     return ins_mask
 
 
+# Changen2, Sec 3.5, Fig.7
+def next_time_contour_gen(t1_mask, t2_mask):
+    # compute change mask
+    cmsk = ((t1_mask > 0) != (t2_mask > 0)).astype(np.uint8)
+    cmsk = binary_opening(cmsk).astype(np.uint8)
+    # compute t2 boundary
+    bd1 = find_boundaries(t1_mask).astype(np.uint8)
+    _cmsk = dilation(cmsk, square(3))
+    bd2 = bd1 * (1 - _cmsk)
+    return bd2
+
+
 def generate_mask_seq(mask, seq_len=6, max_change_num_per_frame=5, mode='remove', seed=None, min_change_num_per_frame=1):
     random.seed(seed)
     if mode == 'remove':
@@ -146,4 +160,3 @@ def generate_mask_seq(mask, seq_len=6, max_change_num_per_frame=5, mode='remove'
     else:
         raise NotImplementedError
     return ds
-
