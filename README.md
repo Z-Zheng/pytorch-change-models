@@ -24,6 +24,13 @@ Technical consultations are only accepted via email inquiry.
 - Multi-gpu metric computation and score tracker, supporting wandb.
 - Including the latest research advancements in ``Change``, not just architecture games.
 
+### Installation
+
+
+#### nightly version (master)
+```bash
+pip install -U git+https://github.com/Z-Zheng/pytorch-change-models
+```
 
 ### Model zoo (in progress)
 
