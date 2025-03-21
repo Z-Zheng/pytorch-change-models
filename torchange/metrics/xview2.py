@@ -86,8 +86,6 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
 
     logger.info(f'\nOverall F1, Localization F1, Damage F1\n{final_f1:.4f}, {loc_f1:.4f}, {dam_f1:.4f}')
     logger.info(f'dam f1 per class\n{dam_f1s[0]:.4f}, {dam_f1s[1]:.4f}, {dam_f1s[2]:.4f}, {dam_f1s[3]:.4f}')
-    binary_dam_f1 = binary_dam_tb._rows[1][2]
-    logger.info(f'binary dam F1 = {binary_dam_f1:.4f}')
 
     torch.cuda.empty_cache()
 
@@ -99,7 +97,6 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
         f'{split}/minor': dam_f1s[1],
         f'{split}/major': dam_f1s[2],
         f'{split}/destroyed': dam_f1s[3],
-        f'{split}/binary_dam_f1': binary_dam_f1
     }
 
 
@@ -116,6 +113,7 @@ class _xView2StandardEval(er.Callback):
         self.tracked_scores = er.metric.ScoreTracker()
         self.best_final_f1 = 0.
         self.best_step = 0
+        self.split = None
 
     def func(self):
         self.logger.info(f'Split: {self.split}')
@@ -124,7 +122,7 @@ class _xView2StandardEval(er.Callback):
         self.tracked_scores.append(scores, self.global_step)
 
         if er.dist.is_main_process():
-            self.tracked_scores.to_csv(os.path.join(model_dir, f'{self.split}_tracked_scores.csv'))
+            self.tracked_scores.to_csv(os.path.join(self.model_dir, f'{self.split}_tracked_scores.csv'))
 
             if scores[f'{self.split}/final_f1'] > self.best_final_f1:
                 self.launcher.checkpoint.save('model-best.pth')

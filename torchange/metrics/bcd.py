@@ -11,7 +11,6 @@ import torch
 import ever as er
 import numpy as np
 from tqdm import tqdm
-from torchange.metrics.function import binary_change_detection_evaluate
 
 
 @torch.no_grad()
@@ -21,7 +20,7 @@ def binary_change_detection_evaluate(model, dataloader, log_dir=None, logger=Non
 
     for img, gt in tqdm(dataloader, disable=not er.dist.is_main_process()):
         img = img.to(er.auto_device())
-        predictions = self.model(img)
+        predictions = model(img)
 
         pr_change = (predictions['change_prediction'] > 0.5).cpu()
         pr_change = pr_change.numpy().astype(np.uint8)
