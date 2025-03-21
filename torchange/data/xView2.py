@@ -130,3 +130,55 @@ class xView2(BitemporalDataset, er.ERDataset):
             training=True,
             ignore_t2_bg=False,
         ))
+
+
+@er.registry.DATASET.register()
+class HFxView2(HFBitemporalDataset):
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        if self.cfg.training:
+            self.tiles = er.sliding_window((1024, 1024), self.cfg.crop_size, self.cfg.stride)
+        else:
+            self.tiles = er.sliding_window((1024, 1024), 1024, 1024)
+
+        self.build_index()
+
+    def build_index(self):
+        if self.cfg.training:
+            split_name = '_'.join(self.cfg.splits)
+            basename = f'HFxView2_{split_name}_valid_indices_p{self.cfg.crop_size}_s{self.cfg.stride}.npy'
+            indices_file = Path(os.curdir) / basename
+            if indices_file.exists():
+                self.valid_patch_indices = np.load(str(indices_file))
+            else:
+                valid = np.ones([len(self.hfd) * self.tiles.shape[0]], dtype=np.uint8)
+                t2_masks = self.hfd['t2_mask']
+                for img_idx in tqdm(range(len(self.hfd)), disable=not er.dist.is_main_process()):
+                    t2_mask = np.array(t2_masks[img_idx]).astype(np.float32)
+                    for tile_idx in range(self.tiles.shape[0]):
+                        x1, y1, x2, y2 = self.tiles[tile_idx]
+                        sub = t2_mask[y1:y2, x1:x2]
+                        sub[sub == 255] = 0
+                        if np.sum(sub) == 0:
+                            valid[img_idx * self.tiles.shape[0] + tile_idx] = 0
+                self.valid_patch_indices = np.nonzero(valid.astype(bool))[0]
+                np.save(str(indices_file), self.valid_patch_indices)
+        else:
+            self.valid_patch_indices = np.arange(len(self.hfd))
+
+    def compute_tile_slice(self, idx):
+        idx = self.valid_patch_indices[idx]
+        img_idx = idx // self.tiles.shape[0]
+        tile_idx = idx % self.tiles.shape[0]
+        return int(img_idx), self.tiles[tile_idx]
+
+    def __len__(self):
+        return self.valid_patch_indices.shape[0]
+
+    def set_default_config(self):
+        super().set_default_config()
+        self.cfg.update(dict(
+            crop_size=512,
+            stride=256,
+            training=True,
+        ))
