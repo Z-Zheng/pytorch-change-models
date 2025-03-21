@@ -8,17 +8,6 @@ __version__ = "0.0.1"
 import importlib
 import pkgutil
 from pathlib import Path
-import subprocess
-import sys
-
-
-def ensure_package(package_name):
-    try:
-        importlib.import_module(package_name)
-    except ImportError:
-        print(f"[INFO] {package_name} not found. Installing...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
-        print(f"[INFO] {package_name} installed successfully.")
 
 
 def _import_dataclass():
