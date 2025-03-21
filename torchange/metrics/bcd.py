@@ -64,7 +64,7 @@ class BinaryChangeDetectionPixelEval(er.Callback):
         self.score_table_name = data_cfg.type
 
     def func(self):
-        score = binary_change_detection_evaluate(self.model, self.dataloader, self.model_dir, self.logger)
+        score = binary_change_detection_evaluate(self.unwrapped_model, self.dataloader, self.model_dir, self.logger)
 
         best_score = self.score_tracker.highest_score('eval/f1')
         if score['eval/f1'] > best_score['eval/f1']:
@@ -74,4 +74,4 @@ class BinaryChangeDetectionPixelEval(er.Callback):
         self.score_tracker.to_csv(os.path.join(self.model_dir, f'{self.score_table_name}_scores.csv'))
 
         best_score = self.score_tracker.highest_score('eval/f1')
-        self.launcher.logger.info(f"best F1: {best_score['eval/f1']}, at step {best_score['step']}")
+        self.logger.info(f"best F1: {best_score['eval/f1']}, at step {best_score['step']}")

@@ -63,7 +63,6 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
     damage_metric_op = er.metric.PixelMetric(5, model_dir,
                                              logger=logger)
 
-
     for x, y in tqdm(dataloder, disable=not er.dist.is_main_process()):
         x = x.to(er.auto_device())
         gt_loc, gt_dam = y['masks']
@@ -103,14 +102,47 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
     }
 
 
+class _xView2StandardEval(er.Callback):
+    def __init__(
+            self,
+            epoch_interval=10,
+            only_master=False,
+            prior=101,
+            after_train=True
+    ):
+        super().__init__(epoch_interval=epoch_interval, only_master=only_master, prior=prior,
+                         after_train=after_train)
+        self.tracked_scores = er.metric.ScoreTracker()
+        self.best_final_f1 = 0.
+        self.best_step = 0
+
+    def func(self):
+        self.logger.info(f'Split: {self.split}')
+
+        scores = evaluate(self.unwrapped_model, self.dataloader, self.logger, self.model_dir, self.split)
+        self.tracked_scores.append(scores, self.global_step)
+
+        if er.dist.is_main_process():
+            self.tracked_scores.to_csv(os.path.join(model_dir, f'{self.split}_tracked_scores.csv'))
+
+            if scores[f'{self.split}/final_f1'] > self.best_final_f1:
+                self.launcher.checkpoint.save('model-best.pth')
+                self.best_final_f1 = scores[f'{self.split}/final_f1']
+                self.best_step = self.global_step
+
+            self.logger.info(f'best scores: {self.best_final_f1}, at step: {self.best_step}')
+
+
 @er.registry.CALLBACK.register()
-class xView2StandardEvalCallback(er.Callback):
-    def __init__(self,
-                 dataset_dir,
-                 epoch_interval=10,
-                 only_master=False,
-                 prior=101,
-                 after_train=True):
+class xView2StandardEval(_xView2StandardEval):
+    def __init__(
+            self,
+            dataset_dir,
+            epoch_interval=10,
+            only_master=False,
+            prior=101,
+            after_train=True
+    ):
         super().__init__(epoch_interval=epoch_interval, only_master=only_master, prior=prior,
                          after_train=after_train)
         split = Path(dataset_dir).name
@@ -131,25 +163,33 @@ class xView2StandardEvalCallback(er.Callback):
         ))
         self.dataloader = er.data.as_ddp_inference_loader(dataloader)
 
-        self.tracked_scores = er.metric.ScoreTracker()
-        self.best_final_f1 = 0.
-        self.best_step = 0
 
-    def func(self):
-        self.launcher.logger.info(f'Split: {self.split}')
-        model = self.launcher.er_model
-        logger = self.launcher.logger
-        model_dir = self.launcher.model_dir
-
-        scores = evaluate(model, self.dataloader, logger, model_dir, self.split)
-        self.tracked_scores.append(scores, self.launcher.checkpoint.global_step)
-
-        if self.launcher._master:
-            self.tracked_scores.to_csv(os.path.join(model_dir, f'{self.split}_tracked_scores.csv'))
-
-            if scores[f'{self.split}/final_f1'] > self.best_final_f1:
-                self.launcher.checkpoint.save('model-best.pth')
-                self.best_final_f1 = scores[f'{self.split}/final_f1']
-                self.best_step = self.launcher.checkpoint.global_step
-
-            self.launcher.logger.info(f'best scores: {self.best_final_f1}, at step: {self.best_step}')
+@er.registry.CALLBACK.register()
+class HFxView2StandardEval(_xView2StandardEval):
+    def __init__(
+            self,
+            split,
+            epoch_interval=10,
+            only_master=False,
+            prior=101,
+            after_train=True
+    ):
+        super().__init__(epoch_interval=epoch_interval, only_master=only_master, prior=prior,
+                         after_train=after_train)
+        assert split in ['test', 'hold']
+        self.split = split
+        dataloader = er.builder.make_dataloader(dict(
+            type='HFxView2',
+            params=dict(
+                hf_repo_name='EVER-Z/torchange_xView2',
+                splits=[split],
+                training=False,
+                transform=A.Compose([
+                    A.Normalize(),
+                    A.pytorch.ToTensorV2(),
+                ]),
+                batch_size=1,
+                num_workers=2,
+            ),
+        ))
+        self.dataloader = er.data.as_ddp_inference_loader(dataloader)
