@@ -125,7 +125,7 @@ class _xView2StandardEval(er.Callback):
             self.tracked_scores.to_csv(os.path.join(self.model_dir, f'{self.split}_tracked_scores.csv'))
 
             if scores[f'{self.split}/final_f1'] > self.best_final_f1:
-                self.launcher.checkpoint.save('model-best.pth')
+                self.save_model('model-best.pth')
                 self.best_final_f1 = scores[f'{self.split}/final_f1']
                 self.best_step = self.global_step
 
