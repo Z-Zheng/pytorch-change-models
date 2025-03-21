@@ -4,9 +4,13 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+
+import ever as er
+import ever.module.loss as L
 import torch
 import torch.nn as nn
-import ever as er
+import torch.nn.functional as F
+from einops import rearrange
 
 try:
     import segmentation_models_pytorch as smp
@@ -14,9 +18,7 @@ try:
 except ImportError:
     print(f"segmentation_models_pytorch not found. please `pip install segmentation_models_pytorch`")
 
-from einops import rearrange
-import torch.nn.functional as F
-import ever.module.loss as L
+
 
 CHANGE = 'change_prediction'
 T1SEM = 't1_semantic_prediction'
