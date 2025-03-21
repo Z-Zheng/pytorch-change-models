@@ -58,11 +58,11 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
     dataloder = test_dataloader
     torch.cuda.empty_cache()
     model.eval()
-    # ppe = ProcessPoolExecutor(max_workers=4)
+
     loc_metric_op = er.metric.PixelMetric(2, model_dir, logger=logger)
     damage_metric_op = er.metric.PixelMetric(5, model_dir,
                                              logger=logger)
-    binary_dam_metric_op = er.metric.PixelMetric(2, model_dir, logger=logger)
+
 
     for x, y in tqdm(dataloder, disable=not er.dist.is_main_process()):
         x = x.to(er.auto_device())
@@ -70,6 +70,7 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
         pred = model(x)
         loc_pred, dam_pred = parse_prediction_v1(pred)
 
+        # single-map constrain
         # https://github.com/DIUx-xView/xView2_scoring/blob/ea0793da6f66a71236f2c4a34536d51beff483ab/xview2_metrics.py#L99
         dam_pred = loc_pred * dam_pred
 
@@ -80,7 +81,6 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
     er.dist.synchronize()
     loc_tb = loc_metric_op.summary_all()
     dam_tb = damage_metric_op.summary_all()
-    binary_dam_tb = binary_dam_metric_op.summary_all()
 
     loc_f1, dam_f1, final_f1, dam_f1s = mixed_score(loc_tb, dam_tb)
 
