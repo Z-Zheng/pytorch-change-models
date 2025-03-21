@@ -18,7 +18,6 @@ install_requires = [
     'scikit-image',
     'tqdm',
     'einops',
-    'segmentation-models-pytorch',
     'timm',
     'datasets[vision]',
 ]

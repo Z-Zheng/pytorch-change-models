@@ -7,8 +7,13 @@
 import torch
 import torch.nn as nn
 import ever as er
-import segmentation_models_pytorch as smp
-from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
+
+try:
+    import segmentation_models_pytorch as smp
+    from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
+except ImportError:
+    print(f"segmentation_models_pytorch not found. please `pip install segmentation_models_pytorch`")
+
 from einops import rearrange
 import torch.nn.functional as F
 import ever.module.loss as L

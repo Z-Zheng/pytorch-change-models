@@ -4,7 +4,7 @@ import numpy as np
 from pathlib import Path
 import ever as er
 
-from torchange.data.bitemporal import BitemporalDataset, data_transform
+from torchange.data.bitemporal import HFBitemporalDataset, BitemporalDataset, data_transform
 from skimage.io import imread
 import torch
 from tqdm import tqdm

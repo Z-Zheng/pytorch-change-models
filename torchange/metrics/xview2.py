@@ -4,14 +4,15 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
-import ever as er
+import os
+from pathlib import Path
+
 import albumentations as A
 import albumentations.pytorch
-import os
-import torch
+import ever as er
 import numpy as np
+import torch
 from tqdm import tqdm
-from pathlib import Path
 
 
 def mixed_score(loc_tb, dam_tb):
@@ -148,6 +149,7 @@ class xView2StandardEval(_xView2StandardEval):
         split = Path(dataset_dir).name
         assert split in ['test', 'hold']
         self.split = split
+
         dataloader = er.builder.make_dataloader(dict(
             type='xView2',
             params=dict(
@@ -178,6 +180,7 @@ class HFxView2StandardEval(_xView2StandardEval):
                          after_train=after_train)
         assert split in ['test', 'hold']
         self.split = split
+
         dataloader = er.builder.make_dataloader(dict(
             type='HFxView2',
             params=dict(
