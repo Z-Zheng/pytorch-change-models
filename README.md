@@ -29,7 +29,7 @@ Technical consultations are only accepted via email inquiry.
 
 #### nightly version (master)
 ```bash
-pip install -U git+https://github.com/Z-Zheng/pytorch-change-models
+pip install -U --no-deps --force-reinstall git+https://github.com/Z-Zheng/pytorch-change-models
 ```
 
 ### Model zoo (in progress)
