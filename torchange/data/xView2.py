@@ -178,6 +178,7 @@ class HFxView2(HFBitemporalDataset):
     def set_default_config(self):
         super().set_default_config()
         self.cfg.update(dict(
+            hf_repo_name='EVER-Z/torchange_xView2',
             crop_size=512,
             stride=256,
             training=True,
