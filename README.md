@@ -72,6 +72,21 @@ This is also a tutorial for junior researchers interested in contemporary change
 
 
 ### License
-This project is under the CC-BY-NC 4.0 license. See [LICENSE](https://github.com/Z-Zheng/pytorch-change-models/blob/main/LICENSE) for details.
+This project is under the Apache 2.0 License. See [LICENSE](https://github.com/Z-Zheng/pytorch-change-models/blob/main/LICENSE) for details.
+
+If you find it useful in your work — whether in research, demos, products, or educational materials — we’d love to hear from you!
+
+Sharing your use case helps us:
+
+📌 Understand real-world impact
+
+📣 Highlight your work in our future talks or papers
+
+🚀 Improve future versions of this project
+
+📬 Please drop us a short message at:
+zhuozheng@cs.stanford.edu
+Feel free to include a brief description, your institution/company, a link to your work (if available), or any suggestions.
+
 
 ![visitors](https://visitor-badge.laobi.icu/badge?page_id=Z-Zheng/pytorch-change-models)
