@@ -1,3 +1,9 @@
+# Copyright (c) Zhuo Zheng and affiliates.
+# All rights reserved.
+
+# This source code is licensed under the license found in the
+# LICENSE file in the root directory of this source tree.
+
 import ever as er
 from torchange.data.bitemporal import BitemporalDataset
 import glob
