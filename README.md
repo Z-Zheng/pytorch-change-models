@@ -32,6 +32,11 @@ Technical consultations are only accepted via email inquiry.
 pip install -U --no-deps --force-reinstall git+https://github.com/Z-Zheng/pytorch-change-models
 ```
 
+#### stable version (pypi)
+```bash
+pip install torchange
+```
+
 ### Model zoo (in progress)
 
 This is also a tutorial for junior researchers interested in contemporary change detection.
