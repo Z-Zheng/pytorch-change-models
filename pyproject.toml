@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "torchange"
+version = "0.0.1"
+description = "A Unified Change Representation Learning Benchmark Library"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+authors = [
+    { name = "Zhuo Zheng", email = "zhuozheng@cs.stanford.edu" }
+]
+
+keywords = [
+    "Remote Sensing",
+    "Earth Vision",
+    "Change Detection",
+    "Change Generation",
+]
+
+classifiers = [
+    'Development Status :: 4 - Beta',
+    'Operating System :: OS Independent',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Topic :: Utilities',
+]
+
+dependencies = [
+    'numpy',
+    'albumentations>=0.4.2',
+    'tifffile',
+    'scikit-image',
+    'tqdm',
+    'einops',
+    'timm',
+    'datasets[vision]',
+]
+
+[tool.setuptools.dynamic]
+version = { attr = "torchange.__version__" }
+
+
+[tool.setuptools.packages.find]
+exclude = ["projects", "examples", "demo_images", "docs"]
