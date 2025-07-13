@@ -36,8 +36,8 @@ m.set_hyperparameters(
     bitemporal_match=True,
 )
 
-img1 = imread('https://github.com/Z-Zheng/pytorch-change-models/blob/main/demo_images/t1_img.png')
-img2 = imread('https://github.com/Z-Zheng/pytorch-change-models/blob/main/demo_images/t2_img.png')
+img1 = imread('https://raw.githubusercontent.com/Z-Zheng/pytorch-change-models/main/demo_images/t1_img.png')
+img2 = imread('https://raw.githubusercontent.com/Z-Zheng/pytorch-change-models/main/demo_images/t2_img.png')
 
 changemasks, _, _ = m.forward(img1, img2) # automatic mode
 fig, axes = show_change_masks(img1, img2, changemasks)
@@ -66,8 +66,8 @@ m.set_hyperparameters(
     object_sim_thresh=60, # for point query
 )
 
-img1 = imread('https://github.com/Z-Zheng/pytorch-change-models/blob/main/demo_images/t1_img.png')
-img2 = imread('https://github.com/Z-Zheng/pytorch-change-models/blob/main/demo_images/t2_img.png')
+img1 = imread('https://raw.githubusercontent.com/Z-Zheng/pytorch-change-models/main/demo_images/t1_img.png')
+img2 = imread('https://raw.githubusercontent.com/Z-Zheng/pytorch-change-models/main/demo_images/t2_img.png')
 
 # parameter description:
 # xy: an absolute image coordinate.
