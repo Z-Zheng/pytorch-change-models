@@ -39,6 +39,7 @@ dependencies = [
     'einops',
     'timm',
     'datasets[vision]',
+    'ever-beta'
 ]
 
 [tool.setuptools.dynamic]
