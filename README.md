@@ -37,6 +37,11 @@ pip install -U --no-deps --force-reinstall git+https://github.com/Z-Zheng/pytorc
 pip install torchange
 ```
 
+#### conda-forge version
+```bash
+conda install -c conda-forge torchange
+```
+
 ### Model zoo (in progress)
 
 This is also a tutorial for junior researchers interested in contemporary change detection.
