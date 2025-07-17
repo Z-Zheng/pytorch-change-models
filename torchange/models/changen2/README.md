@@ -44,6 +44,8 @@ from torchange.models.changen2 import RSDiT_models
 
 ### Changen2 pre-trained ChangeStar (1x256) models
 
+See this [notebook](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/changen2_pretrained_changestar1x256_inference_demo.ipynb) demo for model inference
+
 ```python
 from torchange.models.changen2 import changestar_1x256
 ```
