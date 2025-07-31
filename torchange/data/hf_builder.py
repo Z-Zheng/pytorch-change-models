@@ -12,6 +12,7 @@ HF_DATASETS = {
     'xView2': 'EVER-Z/torchange_xView2',
     'Changen2-S1-15k': 'EVER-Z/torchange_Changen2-S1-15k',
     'Changen2-S9-27k': 'EVER-Z/torchange_Changen2-S9-27k',
+    'bright': 'EVER-Z/torchange_bright',
 }
 
 
@@ -31,6 +32,19 @@ def build_dataset(dataset_name, splits, transform, **kwargs):
             crop_size=kwargs['crop_size'],
             stride=kwargs['stride'],
             training=kwargs['training'],
+        ))
+
+    if dataset_name == 'bright':
+        from torchange.data.bright import HFBRIGHT
+        assert 'setting' in kwargs
+        assert 'setting_splits' in kwargs
+
+        return HFBRIGHT(dict(
+            hf_repo_name=HF_DATASETS[dataset_name],
+            splits=['full'],
+            transform=transform,
+            setting=kwargs['setting'],
+            setting_splits=kwargs['setting_splits'],
         ))
 
     dataset = HFBitemporalDataset(dict(
