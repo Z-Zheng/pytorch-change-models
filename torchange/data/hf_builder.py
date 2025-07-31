@@ -13,6 +13,7 @@ HF_DATASETS = {
     'Changen2-S1-15k': 'EVER-Z/torchange_Changen2-S1-15k',
     'Changen2-S9-27k': 'EVER-Z/torchange_Changen2-S9-27k',
     'bright': 'EVER-Z/torchange_bright',
+    'dsifn-cd': 'EVER-Z/torchange_dsifn-cd',
 }
 
 
