@@ -7,7 +7,7 @@ from torchange.data.bitemporal import HFBitemporalDataset
 from enum import StrEnum
 
 
-class Setting(StrEnum):
+class Setup(StrEnum):
     STANDARD = 'std_split'
     ONESHOT = 'oneshot_split'
     UMCD = 'umcd_split'
@@ -35,7 +35,7 @@ EVENTS = [
 class HFBRIGHT(HFBitemporalDataset):
     def __init__(self, cfg):
         super().__init__(cfg)
-        assert self.cfg.setting in [Setting.STANDARD, Setting.ONESHOT, Setting.UMCD, Setting.EVENT]
+        assert self.cfg.setting in [Setup.STANDARD, Setup.ONESHOT, Setup.UMCD, Setup.EVENT]
         self.hfd = self.hfd.filter(lambda x: x in self.cfg.setting_splits, input_columns=self.cfg.setting)
 
     def set_default_config(self):
@@ -43,7 +43,7 @@ class HFBRIGHT(HFBitemporalDataset):
         self.cfg.update(dict(
             hf_repo_name='EVER-Z/torchange_bright',
             splits=['full'],
-            setting=Setting.STANDARD,
+            setting=Setup.STANDARD,
             setting_splits=['train'],
         ))
 
