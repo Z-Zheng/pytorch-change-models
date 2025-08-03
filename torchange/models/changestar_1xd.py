@@ -230,7 +230,7 @@ class ChangeMixinBiSupN1(nn.Module):
                     return logit.sigmoid()
 
             return {
-                CHANGE: change_logit.sigmoid(),
+                CHANGE: _act(change_logit),
                 T1SEM: _act(t1_semantic_logit) if self.num_semantic_classes else None,
                 T2SEM: _act(t2_semantic_logit) if self.num_semantic_classes else None,
             }
