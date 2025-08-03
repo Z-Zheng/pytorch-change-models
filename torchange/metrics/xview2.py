@@ -16,6 +16,7 @@ from tqdm import tqdm
 
 
 def mixed_score(loc_tb, dam_tb):
+    """Compute the xView2 mixed score from localization and damage tables."""
     loc_f1 = loc_tb.f1(1)
 
     nodamage_f1 = dam_tb.f1(1)
@@ -33,12 +34,14 @@ def mixed_score(loc_tb, dam_tb):
 
 
 def _accumulate_loc(op, gt, pr):
+    """Accumulate localization predictions into the metric operator."""
     gt = gt.numpy().ravel()
     gt = np.where(gt > 0, np.ones_like(gt), np.zeros_like(gt))
     op.forward(gt, pr)
 
 
 def _accumulate_dam(op, gt, pr):
+    """Accumulate damage predictions ignoring unlabeled pixels."""
     IGNORE_INDEX = 255
     gt_dam = gt.numpy().ravel()
     # https://github.com/DIUx-xView/xView2_scoring/blob/ea0793da6f66a71236f2c4a34536d51beff483ab/xview2_metrics.py#L100
@@ -49,6 +52,7 @@ def _accumulate_dam(op, gt, pr):
 
 
 def parse_prediction_v1(pred):
+    """Extract localization and damage predictions from model output."""
     loc_pred = pred['t1_semantic_prediction'] > 0.5
     dam_pred = pred['change_prediction'].argmax(dim=1)
     return loc_pred, dam_pred
@@ -56,6 +60,26 @@ def parse_prediction_v1(pred):
 
 @torch.no_grad()
 def evaluate(model, test_dataloader, logger, model_dir, split):
+    """Evaluate a model on the xView2 benchmark.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Model to evaluate.
+    test_dataloader : DataLoader
+        Iterable providing input images and masks.
+    logger : logging.Logger
+        Logger instance.
+    model_dir : str
+        Directory used by metric operators for logging.
+    split : str
+        Name of the evaluated split (e.g., ``"test"``).
+
+    Returns
+    -------
+    dict
+        Mapping of metric names to scores.
+    """
     dataloder = test_dataloader
     torch.cuda.empty_cache()
     model.eval()
@@ -101,6 +125,8 @@ def evaluate(model, test_dataloader, logger, model_dir, split):
 
 
 class _xView2StandardEval(er.Callback):
+    """Base evaluator for xView2 standard splits."""
+
     def __init__(
             self,
             epoch_interval=10,
@@ -134,6 +160,8 @@ class _xView2StandardEval(er.Callback):
 
 @er.registry.CALLBACK.register()
 class xView2StandardEval(_xView2StandardEval):
+    """Evaluate models on raw xView2 splits."""
+
     def __init__(
             self,
             dataset_dir,
@@ -166,6 +194,8 @@ class xView2StandardEval(_xView2StandardEval):
 
 @er.registry.CALLBACK.register()
 class HFxView2StandardEval(_xView2StandardEval):
+    """Evaluator for HuggingFace hosted xView2 splits."""
+
     def __init__(
             self,
             split,
