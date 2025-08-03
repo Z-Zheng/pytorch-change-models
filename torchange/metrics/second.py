@@ -80,6 +80,66 @@ def score_summary(hist):
     }
 
 
+@torch.no_grad()
+def semantic_change_detection_evaluate(model, dataloader, model_dir=None, logger=None):
+    """Evaluate semantic change detection model with a unified interface."""
+    model.eval()
+    num_class = 37
+    hist = np.zeros((num_class, num_class))
+
+    bcd = er.metric.PixelMetric(2, model_dir, logger=logger)
+    scd = er.metric.PixelMetric(6 * 6 + 1, model_dir, logger=logger, class_names=change_types)
+    class_freq = torch.zeros([6 * 6 + 1, ], dtype=torch.int64)
+
+    for img, gt in tqdm(dataloader, disable=not er.dist.is_main_process()):
+        img = img.to(er.auto_device())
+        predictions = model(img)
+        CLASS = predictions['t1_semantic_prediction'].size(1)
+
+        s1 = predictions['t1_semantic_prediction'].argmax(dim=1)
+        s2 = predictions['t2_semantic_prediction'].argmax(dim=1)
+        c = predictions['change_prediction'] > 0.5
+
+        pr_sc = torch.where(c, s1 * CLASS + s2 + 1, torch.zeros_like(s1))
+
+        gt_s1 = gt['masks'][0].to(torch.int64)
+        gt_s2 = gt['masks'][1].to(torch.int64)
+        gt_sc = torch.where(
+            gt['masks'][-1] > 0, gt_s1 * CLASS + gt_s2 + 1, torch.zeros_like(gt['masks'][0])
+        )
+
+        bcd.forward(gt['masks'][-1], c)
+        scd.forward(gt_sc, pr_sc)
+
+        idx, cnt = torch.unique(gt_sc, return_counts=True)
+        class_freq.scatter_add_(dim=0, index=idx.to(torch.int64), src=cnt)
+
+        hist += get_hist(pr_sc.cpu().numpy(), gt_sc.cpu().numpy(), num_class)
+
+    valid_cls_indices = class_freq.nonzero(as_tuple=True)[0].numpy()
+    er.info(f'effective number of change types: {valid_cls_indices.shape[0]}')
+
+    er.dist.synchronize()
+    bcd_results = bcd.summary_all()
+    scd_results = scd.summary_all()
+
+    ious = []
+    for i in valid_cls_indices:
+        ious.append(scd_results.iou(int(i)))
+    mIoU = sum(ious) / len(ious)
+
+    second_score = score_summary(hist)
+
+    return {
+        'eval/mIoU_scd': mIoU,
+        'eval/IoU_bcd': bcd_results.iou(1),
+        'eval/f1_bcd': bcd_results.f1(1),
+        'eval/prec_bcd': bcd_results.precision(1),
+        'eval/rec_bcd': bcd_results.recall(1),
+        **second_score,
+    }
+
+
 @er.registry.CALLBACK.register()
 class SemanticChangeDetectionEval(er.Callback):
     def __init__(self, data_cfg, epoch_interval, prior=101):
