@@ -70,6 +70,20 @@ class ChangeStar1xd(er.ERModule):
 
         return preds
 
+    def _semantic_loss(self, pred, target):
+        if pred.size(1) > 1:
+            return {
+                'ce_loss': F.cross_entropy(pred, target.to(torch.int64), reduction='mean', ignore_index=255),
+                'dice_loss': L.dice_loss_with_logits(pred, target.to(torch.int64)),
+            }
+        else:
+            target = target.to(torch.float32)
+            return {
+                'bce_loss': L.binary_cross_entropy_with_logits(
+                    pred, target.reshape_as(pred), reduction='mean'),
+                'dice_loss': L.dice_loss_with_logits(pred, target),
+            }
+
     @torch.amp.autocast('cuda', dtype=torch.float32)
     def loss(self, preds, y):
         # masks[0] - cls, masks[1] - cls, masks[2] - change
@@ -106,34 +120,12 @@ class ChangeStar1xd(er.ERModule):
                     )
 
         if preds[T1SEM] is not None and 't1' in self.cfg.loss:
-            gt_t1 = y['masks'][0]
-            if preds[T1SEM].size(1) > 1:
-                loss_dict.update(dict(
-                    t1_ce_loss=F.cross_entropy(preds[T1SEM], gt_t1.to(torch.int64), reduction='mean', ignore_index=255),
-                    t1_dice_loss=L.dice_loss_with_logits(preds[T1SEM], gt_t1.to(torch.int64))
-                ))
-            else:
-                gt_t1 = gt_t1.to(torch.float32)
-                loss_dict.update(dict(
-                    t1_bce_loss=L.binary_cross_entropy_with_logits(
-                        preds[T1SEM], gt_t1.reshape_as(preds[T1SEM]), reduction='mean'),
-                    t1_dice_loss=L.dice_loss_with_logits(preds[T1SEM], gt_t1),
-                ))
+            t1_losses = self._semantic_loss(preds[T1SEM], y['masks'][0])
+            loss_dict.update({f"t1_{k}": v for k, v in t1_losses.items()})
 
         if preds[T2SEM] is not None and 't2' in self.cfg.loss:
-            gt_t2 = y['masks'][1]
-            if preds[T2SEM].size(1) > 1:
-                loss_dict.update(dict(
-                    t2_ce_loss=F.cross_entropy(preds[T2SEM], gt_t2.to(torch.int64), reduction='mean', ignore_index=255),
-                    t2_dice_loss=L.dice_loss_with_logits(preds[T2SEM], gt_t2.to(torch.int64)),
-                ))
-            else:
-                gt_t2 = gt_t2.to(torch.float32)
-                loss_dict.update(dict(
-                    t2_bce_loss=L.binary_cross_entropy_with_logits(
-                        preds[T2SEM], gt_t2.reshape_as(preds[T2SEM]), reduction='mean'),
-                    t2_dice_loss=L.dice_loss_with_logits(preds[T2SEM], gt_t2),
-                ))
+            t2_losses = self._semantic_loss(preds[T2SEM], y['masks'][1])
+            loss_dict.update({f"t2_{k}": v for k, v in t2_losses.items()})
 
         if 'sc' in self.cfg.loss:
             loss_dict.update(dict(
