@@ -130,7 +130,7 @@ class ChangeStar1xd(er.ERModule):
             else:
                 gt_t2 = gt_t2.to(torch.float32)
                 loss_dict.update(dict(
-                    t2_bce_loss=F.binary_cross_entropy_with_logits(
+                    t2_bce_loss=L.binary_cross_entropy_with_logits(
                         preds[T2SEM], gt_t2.reshape_as(preds[T2SEM]), reduction='mean'),
                     t2_dice_loss=L.dice_loss_with_logits(preds[T2SEM], gt_t2),
                 ))
