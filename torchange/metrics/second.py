@@ -30,17 +30,20 @@ for i in range(6):
 
 
 def fast_hist(a, b, n):
+    """Compute the confusion matrix for a single pair of arrays."""
     k = (a >= 0) & (a < n)
     return np.bincount(n * a[k].astype(int) + b[k], minlength=n ** 2).reshape(n, n)
 
 
 def get_hist(image, label, num_class):
+    """Accumulate confusion matrix given prediction and label images."""
     hist = np.zeros((num_class, num_class))
     hist += fast_hist(image.flatten(), label.flatten(), num_class)
     return hist
 
 
 def cal_kappa(hist):
+    """Compute the Cohen's Kappa coefficient from a confusion matrix."""
     if hist.sum() == 0:
         po = 0
         pe = 1
@@ -56,6 +59,7 @@ def cal_kappa(hist):
 
 
 def score_summary(hist):
+    """Compute SECOND benchmark scores from a confusion matrix."""
     hist_fg = hist[1:, 1:]
     c2hist = np.zeros((2, 2))
     c2hist[0][0] = hist[0][0]
@@ -82,7 +86,24 @@ def score_summary(hist):
 
 @torch.no_grad()
 def semantic_change_detection_evaluate(model, dataloader, model_dir=None, logger=None):
-    """Evaluate semantic change detection model with a unified interface."""
+    """Evaluate a model for semantic change detection.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Model producing semantic predictions for two times and a change map.
+    dataloader : DataLoader
+        Iterable of input images and ground truth masks.
+    model_dir : str, optional
+        Directory for log files.
+    logger : logging.Logger, optional
+        Logger for progress messages.
+
+    Returns
+    -------
+    dict
+        Dictionary of SECOND metrics.
+    """
     model.eval()
     num_class = 37
     hist = np.zeros((num_class, num_class))
@@ -142,6 +163,8 @@ def semantic_change_detection_evaluate(model, dataloader, model_dir=None, logger
 
 @er.registry.CALLBACK.register()
 class SemanticChangeDetectionEval(er.Callback):
+    """Callback that evaluates SECOND metrics during training."""
+
     def __init__(self, data_cfg, epoch_interval, prior=101):
         super().__init__(
             epoch_interval=epoch_interval,
@@ -177,6 +200,7 @@ class SemanticChangeDetectionEval(er.Callback):
 
     @torch.no_grad()
     def evaluate_sek(self):
+        """Evaluate SEK and related metrics."""
         self.model.eval()
         num_class = 37
         hist = np.zeros((num_class, num_class))
@@ -202,6 +226,7 @@ class SemanticChangeDetectionEval(er.Callback):
 
     @torch.no_grad()
     def evaluate_mIoU(self):
+        """Evaluate mean IoU for semantic change detection."""
         self.model.eval()
         bcd = er.metric.PixelMetric(2, self.model_dir, logger=self.logger)
         scd = er.metric.PixelMetric(6 * 6 + 1, self.model_dir, logger=self.logger, class_names=change_types)

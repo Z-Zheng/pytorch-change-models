@@ -12,6 +12,8 @@ import torch
 
 @er.registry.DATASET.register()
 class BinarySECOND(BitemporalDataset, er.ERDataset):
+    """Binary change detection subset of the SECOND dataset."""
+
     def __init__(self, cfg):
         er.ERDataset.__init__(self, cfg)
         root_dir = Path(self.cfg.dataset_dir)
@@ -41,6 +43,8 @@ class BinarySECOND(BitemporalDataset, er.ERDataset):
 
 @er.registry.DATASET.register()
 class SECOND(BitemporalDataset, er.ERDataset):
+    """Semantic change detection SECOND dataset."""
+
     def __init__(self, cfg):
         er.ERDataset.__init__(self, cfg)
         root_dir = Path(self.cfg.dataset_dir)

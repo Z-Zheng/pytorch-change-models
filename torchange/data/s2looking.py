@@ -13,6 +13,8 @@ import os
 
 @er.registry.DATASET.register()
 class S2Looking(BitemporalDataset, er.ERDataset):
+    """S2Looking dataset for satellite image change detection."""
+
     def __init__(self, cfg):
         er.ERDataset.__init__(self, cfg)
         A_image_fps = sorted(glob.glob(os.path.join(self.cfg.dataset_dir, 'Image1', '*.png')))

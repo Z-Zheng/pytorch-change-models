@@ -21,6 +21,19 @@ POST = 'post'
 
 
 class BinarizeMask(A.DualTransform):
+    """Ensure binary masks after augmentation.
+
+    This transform does nothing to the image but converts all non-zero
+    pixels of the mask to 1. It is useful when augmentations may introduce
+    interpolation artifacts in binary masks.
+
+    Examples
+    --------
+    >>> import albumentations as A
+    >>> T = A.Compose([BinarizeMask()])
+    >>> out = T(image=img, mask=mask)
+    """
+
     def __init__(self):
         super().__init__(True, 1.0)
 
@@ -35,10 +48,40 @@ class BinarizeMask(A.DualTransform):
 
 
 def check_name(t1_image_name, other):
+    """Verify two file names are identical.
+
+    Parameters
+    ----------
+    t1_image_name : str
+        Name of the first image.
+    other : str
+        Name to compare against ``t1_image_name``.
+
+    Raises
+    ------
+    AssertionError
+        If the two names are different.
+    """
     assert t1_image_name == other, f'expected {t1_image_name}, but {other}'
 
 
 def to_bitemporal_compose(compose):
+    """Convert a standard :class:`albumentations.Compose` to support
+    bitemporal data.
+
+    The returned compose duplicates transformation targets for the second
+    temporal image and optional masks.
+
+    Parameters
+    ----------
+    compose : :class:`albumentations.Compose`
+        Original composition of augmentations.
+
+    Returns
+    -------
+    :class:`albumentations.Compose`
+        A compose object aware of ``t2_image`` and ``t2_mask``.
+    """
     assert isinstance(compose, A.Compose)
 
     return A.Compose(compose.transforms, additional_targets={
@@ -49,6 +92,21 @@ def to_bitemporal_compose(compose):
 
 
 def data_transform(T, data) -> Dict:
+    """Apply transform(s) to bitemporal data.
+
+    Parameters
+    ----------
+    T : dict or callable
+        Either a dictionary with ``pre``, ``temporalwise`` and ``post`` keys
+        or a callable accepting the whole data dictionary.
+    data : dict
+        Dictionary containing ``image``/``t2_image`` and optional masks.
+
+    Returns
+    -------
+    Dict
+        Transformed data.
+    """
     if isinstance(T, dict):
         data = T[PRE](**data)
 
@@ -75,6 +133,28 @@ def data_transform(T, data) -> Dict:
 
 
 class BitemporalDataset(Dataset):
+    """Generic dataset for paired pre- and post-event images.
+
+    Parameters
+    ----------
+    t1_image_fps, t2_image_fps : sequence of str
+        File paths for the first and second temporal images.
+    t1_mask_fps, t2_mask_fps, change_fps : sequence of str, optional
+        File paths for masks associated with each temporal image and the
+        change map.
+    transform : callable or dict, optional
+        Transformations to apply. If a dict is provided it may contain
+        ``pre``, ``temporalwise`` and ``post`` keys.
+    name_checker : callable, optional
+        Function used to assert file name alignment between modalities.
+
+    Examples
+    --------
+    >>> ds = BitemporalDataset(['a.png'], ['b.png'])
+    >>> len(ds)
+    1
+    """
+
     def __init__(
             self,
             t1_image_fps,
@@ -163,6 +243,8 @@ class BitemporalDataset(Dataset):
 
 @er.registry.DATASET.register()
 class HFBitemporalDataset(er.ERDataset):
+    """Bitemporal dataset backed by a HuggingFace dataset."""
+
     def __init__(self, config):
         super().__init__(config)
         ds = []
@@ -190,6 +272,7 @@ class HFBitemporalDataset(er.ERDataset):
             self.t = transform
 
     def _slice_data(self, data, tile_slice):
+        """Slice a tile from a 2D array if ``tile_slice`` is provided."""
         if tile_slice is None:
             return data
 
@@ -197,6 +280,10 @@ class HFBitemporalDataset(er.ERDataset):
         return data[y1:y2, x1:x2]
 
     def compute_tile_slice(self, idx):
+        """Return the dataset index and slice for a tile.
+
+        Subclasses may override this to implement sliding window behaviour.
+        """
         return idx, None
 
     def __getitem__(self, idx):

@@ -15,6 +15,26 @@ from tqdm import tqdm
 
 @torch.no_grad()
 def binary_change_detection_evaluate(model, dataloader, log_dir=None, logger=None, class_names=None):
+    """Evaluate a model for binary change detection.
+
+    Parameters
+    ----------
+    model : torch.nn.Module
+        Model producing a ``change_prediction`` tensor.
+    dataloader : DataLoader
+        Iterable providing images and ground-truth masks.
+    log_dir : str, optional
+        Directory for metric logs.
+    logger : logging.Logger, optional
+        Logger for progress messages.
+    class_names : list of str, optional
+        Names of the classes used by :class:`ever.metric.PixelMetric`.
+
+    Returns
+    -------
+    dict
+        Dictionary containing IoU, F1, precision and recall.
+    """
     model.eval()
     pm = er.metric.PixelMetric(2, log_dir, logger=logger, class_names=class_names)
 
@@ -48,6 +68,8 @@ def binary_change_detection_evaluate(model, dataloader, log_dir=None, logger=Non
 
 @er.registry.CALLBACK.register()
 class BinaryChangeDetectionPixelEval(er.Callback):
+    """Callback that evaluates binary change detection metrics."""
+
     def __init__(self, data_cfg, epoch_interval, prior=101):
         super().__init__(
             epoch_interval=epoch_interval,
