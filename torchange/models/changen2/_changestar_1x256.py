@@ -16,16 +16,19 @@ __all__ = [
     's0_init_s1c1_changestar_vitb_1x256',
     's0_init_s1c5_changestar_vitb_1x256',
     's0_init_s9c1_changestar_vitb_1x256',
+    's0_init_xView2_ft_s1c5_changestar_vitb_1x256',
+    'building_damage_assessment_model',
 ]
 
 
-def changestar_1x256(backbone_type, modeling_type, changen2_pretrained=None) -> ChangeStar1xd:
+def changestar_1x256(backbone_type, modeling_type, changen2_pretrained=None, finetuned_on=None) -> ChangeStar1xd:
     import json
     from huggingface_hub import hf_hub_download
     from torchange.module.farseg import SAMEncoderFarSeg
     assert modeling_type in ['s1c1', 's9c1', 's1c5', ]
     assert backbone_type in ['vitb', 'vitl']
     assert changen2_pretrained in [None, 's0', 's1', 's9']
+    assert finetuned_on in [None, 'xView2', ]
     pretrain_data = {
         None: None,
         's0': 'Changen2-S0-1.2M',
@@ -45,7 +48,11 @@ def changestar_1x256(backbone_type, modeling_type, changen2_pretrained=None) -> 
         with open(available_config, "r", encoding="utf-8") as reader:
             text = reader.read()
         available_config = json.loads(text)
-        weight_name = f'{changen2_pretrained}_changestar_{backbone_type}_1x256'
+        if finetuned_on is None:
+            weight_name = f'{changen2_pretrained}_changestar_{backbone_type}_1x256'
+        else:
+            weight_name = f'{changen2_pretrained}_{finetuned_on}_changestar_{backbone_type}_1x256'
+
         assert weight_name in available_config, f'{weight_name} is not available'
         weights = hf_hub_download('EVER-Z/Changen2-ChangeStar1x256', available_config[weight_name])
 
@@ -53,7 +60,12 @@ def changestar_1x256(backbone_type, modeling_type, changen2_pretrained=None) -> 
         er.info(f'Load Changen2 pre-trained weight from EVER-Z/Changen2-ChangeStar1x256/{available_config[weight_name]}')
 
     er.info(
-        f'architecture: changestar_1x256 | backbone: {backbone_type} | pre-trained data: {pretrain_data[changen2_pretrained]}')
+        f'architecture: changestar_1x256 '
+        f'| backbone: {backbone_type} '
+        f'| modeling type: {modeling_type} '
+        f'| pre-trained data: {pretrain_data[changen2_pretrained]} '
+        f'| finetuned on: {finetuned_on}'
+    )
     return model
 
 
@@ -73,3 +85,9 @@ def s0_init_s9c1_changestar_vitb_1x256(): return changestar_1x256('vitb', 's9c1'
 
 
 def s0_init_s1c5_changestar_vitb_1x256(): return changestar_1x256('vitb', 's1c5', 's0')
+
+
+def s0_init_xView2_ft_s1c5_changestar_vitb_1x256(): return changestar_1x256('vitb', 's1c5', 's0', 'xView2')
+
+
+building_damage_assessment_model = s0_init_xView2_ft_s1c5_changestar_vitb_1x256
