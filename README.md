@@ -1,4 +1,5 @@
 ## torchange - A Unified Change Representation Learning Benchmark Library
+[![PyPI Downloads](https://static.pepy.tech/badge/torchange)](https://pepy.tech/projects/torchange)
 
 torchange aims to provide out-of-box contemporary spatiotemporal change model implementations, standard metrics, and datasets, in pursuit of benchmarking and reproducibility. 
 
