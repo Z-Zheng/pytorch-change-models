@@ -36,7 +36,7 @@ def changestar_1x256(backbone_type, modeling_type, changen2_pretrained=None, fin
         's9': 'Changen2-S9-27k'
     }
 
-    model_name = f'{modeling_type}_cstar_{backbone_type}_1x256'
+    model_name = f'{modeling_type}_cstar_{backbone_type}_1x256.py'
     # build model
     package_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     cfg = er.config.import_config(os.path.join(package_root, 'configs', 'changen2', model_name))
