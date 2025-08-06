@@ -18,6 +18,8 @@ from tqdm import tqdm
 
 @er.registry.DATASET.register()
 class xView2(BitemporalDataset, er.ERDataset):
+    """xView2 building damage assessment dataset."""
+
     def __init__(self, cfg):
         er.ERDataset.__init__(self, cfg)
         dataset_dir = self.cfg.dataset_dir
@@ -72,6 +74,18 @@ class xView2(BitemporalDataset, er.ERDataset):
         )
 
     def parse_dataset_dir(self, dataset_dir):
+        """Parse an xView2 split directory.
+
+        Parameters
+        ----------
+        dataset_dir : str or :class:`pathlib.Path`
+            Path to a split containing ``images`` and ``targets`` folders.
+
+        Returns
+        -------
+        tuple of lists
+            Pre/post image paths and corresponding mask paths.
+        """
         dataset_dir = Path(dataset_dir)
         img_dir = dataset_dir / 'images'
         tgt_dir = dataset_dir / 'targets'
@@ -140,6 +154,8 @@ class xView2(BitemporalDataset, er.ERDataset):
 
 @er.registry.DATASET.register()
 class HFxView2(HFBitemporalDataset):
+    """HuggingFace version of xView2 supporting sliding window access."""
+
     def __init__(self, cfg):
         super().__init__(cfg)
         if self.cfg.training:
@@ -150,6 +166,7 @@ class HFxView2(HFBitemporalDataset):
         self.build_index()
 
     def build_index(self):
+        """Pre-compute valid patch indices for training or evaluation."""
         if self.cfg.training:
             split_name = '_'.join(self.cfg.splits)
             basename = f'HFxView2_{split_name}_valid_indices_p{self.cfg.crop_size}_s{self.cfg.stride}.npy'
@@ -173,6 +190,7 @@ class HFxView2(HFBitemporalDataset):
             self.valid_patch_indices = np.arange(len(self.hfd))
 
     def compute_tile_slice(self, idx):
+        """Map linear index to image index and spatial tile slice."""
         idx = self.valid_patch_indices[idx]
         img_idx = idx // self.tiles.shape[0]
         tile_idx = idx % self.tiles.shape[0]

@@ -8,6 +8,8 @@ from enum import StrEnum
 
 
 class Setup(StrEnum):
+    """Enumeration of BRIGHT dataset evaluation setups."""
+
     STANDARD = 'std_split'
     ONESHOT = 'oneshot_split'
     UMCD = 'umcd_split'
@@ -33,6 +35,8 @@ EVENTS = [
 
 
 class HFBRIGHT(HFBitemporalDataset):
+    """HuggingFace implementation of the BRIGHT benchmark."""
+
     def __init__(self, cfg):
         super().__init__(cfg)
         assert self.cfg.setting in [Setup.STANDARD, Setup.ONESHOT, Setup.UMCD, Setup.EVENT]
@@ -49,4 +53,5 @@ class HFBRIGHT(HFBitemporalDataset):
 
     @property
     def events(self):
+        """List of unique event names in the dataset."""
         return self.hfd.unique('event')

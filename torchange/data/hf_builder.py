@@ -18,6 +18,24 @@ HF_DATASETS = {
 
 
 def build_dataset(dataset_name, splits, transform, **kwargs):
+    """Build a HuggingFace-backed dataset by name.
+
+    Parameters
+    ----------
+    dataset_name : str
+        Key in :data:`HF_DATASETS`.
+    splits : sequence of str
+        Dataset splits to combine.
+    transform : callable
+        Transformations applied to the data.
+    **kwargs
+        Additional arguments required by some datasets.
+
+    Returns
+    -------
+    :class:`HFBitemporalDataset`
+        Instantiated dataset.
+    """
     assert dataset_name in HF_DATASETS
 
     if dataset_name == 'xView2':

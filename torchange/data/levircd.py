@@ -13,6 +13,8 @@ from torchange.data.bitemporal import BitemporalDataset
 
 @er.registry.DATASET.register()
 class LEVIRCD(BitemporalDataset, er.ERDataset):
+    """LEVIR-CD dataset for building change detection."""
+
     def __init__(self, cfg):
         er.ERDataset.__init__(self, cfg)
 
