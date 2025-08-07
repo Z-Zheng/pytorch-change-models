@@ -160,6 +160,31 @@ class ChangeStar1xdModel(PreTrainedModel):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
     
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path, *model_args, **kwargs):
+        """
+        Load a pretrained model from a local directory or from the Hugging Face Hub.
+        
+        Args:
+            pretrained_model_name_or_path (str): Path to the pretrained model directory or model identifier from the Hub
+            *model_args: Additional positional arguments
+            **kwargs: Additional keyword arguments
+            
+        Returns:
+            ChangeStar1xdModel: The loaded model
+        """
+        return super().from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
+    
+    def save_pretrained(self, save_directory, **kwargs):
+        """
+        Save the model to a directory.
+        
+        Args:
+            save_directory (str): Directory to save the model to
+            **kwargs: Additional keyword arguments
+        """
+        super().save_pretrained(save_directory, **kwargs)
+    
     def forward(
         self,
         pixel_values: torch.FloatTensor,
@@ -270,6 +295,31 @@ class ChangeStar1xdForChangeDetection(ChangeStar1xdModel):
     
     def __init__(self, config: ChangeStar1xdConfig):
         super().__init__(config)
+    
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path, *model_args, **kwargs):
+        """
+        Load a pretrained model from a local directory or from the Hugging Face Hub.
+        
+        Args:
+            pretrained_model_name_or_path (str): Path to the pretrained model directory or model identifier from the Hub
+            *model_args: Additional positional arguments
+            **kwargs: Additional keyword arguments
+            
+        Returns:
+            ChangeStar1xdForChangeDetection: The loaded model
+        """
+        return super().from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
+    
+    def save_pretrained(self, save_directory, **kwargs):
+        """
+        Save the model to a directory.
+        
+        Args:
+            save_directory (str): Directory to save the model to
+            **kwargs: Additional keyword arguments
+        """
+        super().save_pretrained(save_directory, **kwargs)
     
     def forward(
         self,

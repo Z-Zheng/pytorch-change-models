@@ -213,6 +213,101 @@ class ChangeMaskModel(PreTrainedModel):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
     
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path, *model_args, **kwargs):
+        """
+        Load a pretrained model from a directory or HuggingFace hub.
+        
+        Args:
+            pretrained_model_name_or_path: Path to the pretrained model directory or model identifier from HuggingFace hub
+            *model_args: Additional arguments for model initialization
+            **kwargs: Additional keyword arguments for model initialization
+            
+        Returns:
+            ChangeMaskModel: Loaded model
+        """
+        config = kwargs.pop("config", None)
+        state_dict = kwargs.pop("state_dict", None)
+        cache_dir = kwargs.pop("cache_dir", None)
+        force_download = kwargs.pop("force_download", False)
+        resume_download = kwargs.pop("resume_download", False)
+        proxies = kwargs.pop("proxies", None)
+        local_files_only = kwargs.pop("local_files_only", False)
+        use_auth_token = kwargs.pop("use_auth_token", None)
+        revision = kwargs.pop("revision", None)
+        mirror = kwargs.pop("mirror", None)
+        torch_dtype = kwargs.pop("torch_dtype", None)
+        device_map = kwargs.pop("device_map", None)
+        low_cpu_mem_usage = kwargs.pop("low_cpu_mem_usage", False)
+        
+        # Load config
+        if config is None:
+            config = ChangeMaskConfig.from_pretrained(
+                pretrained_model_name_or_path,
+                cache_dir=cache_dir,
+                force_download=force_download,
+                resume_download=resume_download,
+                proxies=proxies,
+                local_files_only=local_files_only,
+                use_auth_token=use_auth_token,
+                revision=revision,
+                mirror=mirror,
+            )
+        
+        # Create model
+        model = cls(config, *model_args, **kwargs)
+        
+        # Load state dict if provided
+        if state_dict is not None:
+            model.load_state_dict(state_dict)
+        else:
+            # Try to load from the pretrained path
+            try:
+                state_dict = torch.load(
+                    os.path.join(pretrained_model_name_or_path, "pytorch_model.bin"),
+                    map_location="cpu"
+                )
+                model.load_state_dict(state_dict)
+            except (FileNotFoundError, OSError):
+                # If no state dict found, return model with initialized weights
+                pass
+        
+        # Set dtype and device if specified
+        if torch_dtype is not None:
+            model = model.to(dtype=torch_dtype)
+        
+        if device_map is not None:
+            model = model.to(device_map)
+        
+        return model
+    
+    def save_pretrained(self, save_directory, **kwargs):
+        """
+        Save the model to a directory.
+        
+        Args:
+            save_directory: Directory to save the model
+            **kwargs: Additional arguments for saving
+        """
+        os.makedirs(save_directory, exist_ok=True)
+        
+        # Save config
+        self.config.save_pretrained(save_directory)
+        
+        # Save model weights
+        state_dict = self.state_dict()
+        torch.save(state_dict, os.path.join(save_directory, "pytorch_model.bin"))
+        
+        # Save model info
+        model_info = {
+            "model_type": self.config.model_type,
+            "version": "1.0.0",
+        }
+        
+        with open(os.path.join(save_directory, "model_info.json"), "w") as f:
+            import json
+            json.dump(model_info, f, indent=2)
+    
     def forward(
         self,
         pixel_values: torch.FloatTensor,
@@ -336,6 +431,21 @@ class ChangeMaskForChangeDetection(ChangeMaskModel):
     
     def __init__(self, config: ChangeMaskConfig):
         super().__init__(config)
+    
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path, *model_args, **kwargs):
+        """
+        Load a pretrained model from a directory or HuggingFace hub.
+        
+        Args:
+            pretrained_model_name_or_path: Path to the pretrained model directory or model identifier from HuggingFace hub
+            *model_args: Additional arguments for model initialization
+            **kwargs: Additional keyword arguments for model initialization
+            
+        Returns:
+            ChangeMaskForChangeDetection: Loaded model
+        """
+        return super().from_pretrained(pretrained_model_name_or_path, *model_args, **kwargs)
     
     def forward(
         self,

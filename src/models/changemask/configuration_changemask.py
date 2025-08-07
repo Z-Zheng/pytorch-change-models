@@ -72,4 +72,10 @@ class ChangeMaskConfig(PretrainedConfig):
             "num_change_classes": self.num_change_classes,
             "loss_config": self.loss_config,
         })
-        return output 
+        return output
+    
+    @classmethod
+    def from_dict(cls, config_dict, **kwargs):
+        """Create a config from a dictionary."""
+        config_dict = config_dict.copy()
+        return cls(**config_dict, **kwargs) 

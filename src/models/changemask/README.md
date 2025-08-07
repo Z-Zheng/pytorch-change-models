@@ -58,6 +58,39 @@ pixel_values = torch.randn(2, 6, 256, 256)  # (batch, 2*channels, height, width)
 outputs = model(pixel_values)
 ```
 
+### Loading from Pretrained Checkpoints
+
+The model supports HuggingFace-style `from_pretrained` functionality:
+
+```python
+from models.changemask import ChangeMaskModel, ChangeMaskForChangeDetection
+
+# Load from local directory
+model = ChangeMaskModel.from_pretrained("./path/to/checkpoint")
+
+# Load change detection specific model
+change_model = ChangeMaskForChangeDetection.from_pretrained("./path/to/checkpoint")
+
+# Load with custom parameters
+model = ChangeMaskModel.from_pretrained(
+    "./path/to/checkpoint",
+    torch_dtype=torch.float16,
+    device_map="auto"
+)
+```
+
+### Saving Models
+
+```python
+# Save model to directory
+model.save_pretrained("./output_directory")
+
+# The saved directory will contain:
+# - config.json: Model configuration
+# - pytorch_model.bin: Model weights
+# - model_info.json: Model metadata
+```
+
 ### Training
 
 ```python
@@ -143,6 +176,20 @@ Returns a dictionary with predictions:
 - ever
 - segmentation_models_pytorch
 
+## Saved Model Structure
+
+When using `save_pretrained()`, the model is saved in the following structure:
+
+```
+output_directory/
+├── config.json              # Model configuration
+├── pytorch_model.bin        # Model weights
+└── model_info.json         # Model metadata
+```
+
+The `config.json` contains all the model configuration parameters, while `pytorch_model.bin` contains the actual model weights.
+
 ## Example
 
 See `examples/changemask_example.py` for a complete usage example.
+See `examples/changemask_pretrained_example.py` for `from_pretrained` usage examples.

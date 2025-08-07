@@ -70,6 +70,27 @@ img2 = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
 outputs = model(img1, img2)
 ```
 
+### HuggingFace-style Loading and Saving
+
+The AnyChange model now supports HuggingFace-style `from_pretrained` and `save_pretrained` methods:
+
+```python
+from models.anychange import AnyChangeModel, AnyChangeForChangeDetection
+
+# Save a model
+model = AnyChangeModel(config)
+model.save_pretrained("./my_anychange_model")
+
+# Load a model using from_pretrained
+loaded_model = AnyChangeModel.from_pretrained("./my_anychange_model")
+
+# Or load the specialized change detection model
+change_model = AnyChangeForChangeDetection.from_pretrained("./my_anychange_model")
+
+# Load from HuggingFace Hub (if uploaded)
+# model = AnyChangeModel.from_pretrained("username/anychange-model")
+```
+
 ### Automatic Change Detection
 
 ```python
@@ -118,7 +139,7 @@ model.make_mask_generator(
 from models.anychange import AnyChangeForChangeDetection
 
 # Use specialized change detection model
-change_model = AnyChangeForChangeDetection(config)
+change_model = AnyChangeForChangeDetection.from_pretrained("./my_anychange_model")
 change_outputs = change_model(img1, img2)
 change_masks = change_outputs['change_masks']
 ```
@@ -193,6 +214,13 @@ predictions = model.to_eval_format_predictions(change_masks)
 - Support for different SAM model sizes
 - Configurable mask generation strategies
 
+### HuggingFace Integration
+
+- Full support for `from_pretrained` and `save_pretrained`
+- Compatible with HuggingFace Hub
+- Easy model sharing and distribution
+- Automatic SAM weights management
+
 ## Dependencies
 
 - torch
@@ -204,7 +232,13 @@ predictions = model.to_eval_format_predictions(change_masks)
 
 ## Example
 
-See `examples/anychange_example.py` for a complete usage example.
+See `examples/anychange_from_pretrained_example.py` for a complete usage example demonstrating:
+
+- Model creation and saving
+- Loading models with `from_pretrained`
+- Change detection inference
+- Result visualization
+- Hyperparameter customization
 
 ## Performance
 

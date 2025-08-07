@@ -617,6 +617,75 @@ class ChangeStar2Model(PreTrainedModel):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
     
+    @classmethod
+    def from_pretrained(
+        cls,
+        pretrained_model_name_or_path: Optional[Union[str, os.PathLike]],
+        *model_args,
+        config: Optional[Union[ChangeStar2Config, str, os.PathLike]] = None,
+        cache_dir: Optional[Union[str, os.PathLike]] = None,
+        ignore_mismatched_sizes: bool = False,
+        force_download: bool = False,
+        local_files_only: bool = False,
+        token: Optional[Union[str, bool]] = None,
+        revision: str = "main",
+        use_safetensors: Optional[bool] = None,
+        weights_only: bool = True,
+        **kwargs,
+    ):
+        """
+        Load a pretrained ChangeStar2 model.
+        
+        Args:
+            pretrained_model_name_or_path: Path to pretrained model or model identifier
+            config: Model configuration
+            cache_dir: Directory to cache downloaded models
+            ignore_mismatched_sizes: Whether to ignore mismatched sizes
+            force_download: Whether to force download
+            local_files_only: Whether to use only local files
+            token: HuggingFace token for private models
+            revision: Model revision
+            use_safetensors: Whether to use safetensors
+            weights_only: Whether to load only weights
+            **kwargs: Additional arguments
+            
+        Returns:
+            Loaded ChangeStar2 model
+        """
+        # Load config if not provided
+        if config is None:
+            config = ChangeStar2Config.from_pretrained(
+                pretrained_model_name_or_path,
+                cache_dir=cache_dir,
+                force_download=force_download,
+                local_files_only=local_files_only,
+                token=token,
+                revision=revision,
+                **kwargs,
+            )
+        
+        # Create model
+        model = cls(config, *model_args, **kwargs)
+        
+        # Load weights if available
+        if pretrained_model_name_or_path is not None:
+            # Use the parent class's from_pretrained to handle weight loading
+            model = super().from_pretrained(
+                pretrained_model_name_or_path,
+                config=config,
+                cache_dir=cache_dir,
+                ignore_mismatched_sizes=ignore_mismatched_sizes,
+                force_download=force_download,
+                local_files_only=local_files_only,
+                token=token,
+                revision=revision,
+                use_safetensors=use_safetensors,
+                weights_only=weights_only,
+                **kwargs,
+            )
+        
+        return model
+    
     def forward(
         self,
         pixel_values: torch.FloatTensor,
@@ -675,6 +744,56 @@ class ChangeStar2ForChangeDetection(ChangeStar2Model):
     
     def __init__(self, config: ChangeStar2Config):
         super().__init__(config)
+    
+    @classmethod
+    def from_pretrained(
+        cls,
+        pretrained_model_name_or_path: Optional[Union[str, os.PathLike]],
+        *model_args,
+        config: Optional[Union[ChangeStar2Config, str, os.PathLike]] = None,
+        cache_dir: Optional[Union[str, os.PathLike]] = None,
+        ignore_mismatched_sizes: bool = False,
+        force_download: bool = False,
+        local_files_only: bool = False,
+        token: Optional[Union[str, bool]] = None,
+        revision: str = "main",
+        use_safetensors: Optional[bool] = None,
+        weights_only: bool = True,
+        **kwargs,
+    ):
+        """
+        Load a pretrained ChangeStar2ForChangeDetection model.
+        
+        Args:
+            pretrained_model_name_or_path: Path to pretrained model or model identifier
+            config: Model configuration
+            cache_dir: Directory to cache downloaded models
+            ignore_mismatched_sizes: Whether to ignore mismatched sizes
+            force_download: Whether to force download
+            local_files_only: Whether to use only local files
+            token: HuggingFace token for private models
+            revision: Model revision
+            use_safetensors: Whether to use safetensors
+            weights_only: Whether to load only weights
+            **kwargs: Additional arguments
+            
+        Returns:
+            Loaded ChangeStar2ForChangeDetection model
+        """
+        return super().from_pretrained(
+            pretrained_model_name_or_path,
+            *model_args,
+            config=config,
+            cache_dir=cache_dir,
+            ignore_mismatched_sizes=ignore_mismatched_sizes,
+            force_download=force_download,
+            local_files_only=local_files_only,
+            token=token,
+            revision=revision,
+            use_safetensors=use_safetensors,
+            weights_only=weights_only,
+            **kwargs,
+        )
     
     def forward(
         self,

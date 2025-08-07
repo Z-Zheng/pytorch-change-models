@@ -6,7 +6,7 @@
 
 import os
 import sys
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union, Callable
 
 import torch
 import torch.nn as nn
@@ -573,6 +573,161 @@ class ChangeSparseModel(PreTrainedModel):
             elif isinstance(module, nn.BatchNorm2d):
                 nn.init.constant_(module.weight, 1)
                 nn.init.constant_(module.bias, 0)
+    
+    @classmethod
+    def from_pretrained(
+        cls,
+        pretrained_model_name_or_path: Optional[Union[str, os.PathLike]],
+        *model_args,
+        config: Optional[Union[ChangeSparseConfig, str, os.PathLike]] = None,
+        cache_dir: Optional[Union[str, os.PathLike]] = None,
+        ignore_mismatched_sizes: bool = False,
+        force_download: bool = False,
+        local_files_only: bool = False,
+        token: Optional[Union[str, bool]] = None,
+        revision: str = "main",
+        use_safetensors: Optional[bool] = None,
+        weights_only: bool = True,
+        **kwargs,
+    ):
+        """
+        Load a pretrained ChangeSparse model from a directory or HuggingFace hub.
+        
+        Args:
+            pretrained_model_name_or_path: Path to the pretrained model directory or model identifier from HuggingFace hub
+            config: Model configuration
+            cache_dir: Directory to cache downloaded models
+            ignore_mismatched_sizes: Whether to ignore mismatched sizes
+            force_download: Whether to force download
+            local_files_only: Whether to use only local files
+            token: HuggingFace token for private models
+            revision: Model revision
+            use_safetensors: Whether to use safetensors
+            weights_only: Whether to load only weights
+            **kwargs: Additional arguments
+            
+        Returns:
+            ChangeSparseModel: Loaded model
+        """
+        # Load config
+        if config is None:
+            config = ChangeSparseConfig.from_pretrained(
+                pretrained_model_name_or_path,
+                cache_dir=cache_dir,
+                force_download=force_download,
+                local_files_only=local_files_only,
+                token=token,
+                revision=revision,
+            )
+        
+        # Create model
+        model = cls(config, *model_args, **kwargs)
+        
+        # Load state dict if provided
+        state_dict = kwargs.pop("state_dict", None)
+        if state_dict is not None:
+            model.load_state_dict(state_dict)
+        else:
+            # Try to load from the pretrained path
+            try:
+                # Try to load using transformers' built-in loading mechanism
+                model = super().from_pretrained(
+                    pretrained_model_name_or_path,
+                    config=config,
+                    cache_dir=cache_dir,
+                    ignore_mismatched_sizes=ignore_mismatched_sizes,
+                    force_download=force_download,
+                    local_files_only=local_files_only,
+                    token=token,
+                    revision=revision,
+                    use_safetensors=use_safetensors,
+                    weights_only=weights_only,
+                    **kwargs
+                )
+            except Exception as e:
+                # Fallback to manual loading
+                try:
+                    # Try to load pytorch_model.bin
+                    model_path = os.path.join(pretrained_model_name_or_path, "pytorch_model.bin")
+                    if os.path.exists(model_path):
+                        state_dict = torch.load(model_path, map_location="cpu")
+                        model.load_state_dict(state_dict)
+                    else:
+                        # Try to load model.safetensors
+                        model_path = os.path.join(pretrained_model_name_or_path, "model.safetensors")
+                        if os.path.exists(model_path):
+                            from safetensors.torch import load_file
+                            state_dict = load_file(model_path)
+                            model.load_state_dict(state_dict)
+                        else:
+                            print(f"No model weights found in {pretrained_model_name_or_path}")
+                            print("Model initialized with random weights.")
+                except Exception as load_error:
+                    print(f"Error loading model weights: {load_error}")
+                    print("Model initialized with random weights.")
+        
+        # Set dtype and device if specified
+        torch_dtype = kwargs.pop("torch_dtype", None)
+        if torch_dtype is not None:
+            model = model.to(dtype=torch_dtype)
+        
+        device_map = kwargs.pop("device_map", None)
+        if device_map is not None:
+            model = model.to(device_map)
+        
+        return model
+    
+    def save_pretrained(
+        self,
+        save_directory: Union[str, os.PathLike],
+        is_main_process: bool = True,
+        state_dict: Optional[Dict[str, torch.Tensor]] = None,
+        save_function: Optional[Callable] = None,
+        push_to_hub: bool = False,
+        max_shard_size: Union[int, str] = "5GB",
+        safe_serialization: bool = True,
+        variant: Optional[str] = None,
+        token: Optional[Union[str, bool]] = None,
+        **kwargs,
+    ):
+        """
+        Save the model to a directory.
+        
+        Args:
+            save_directory: Directory to save the model
+            is_main_process: Whether this is the main process
+            state_dict: State dict to save
+            save_function: Function to use for saving
+            push_to_hub: Whether to push to hub
+            max_shard_size: Maximum shard size
+            safe_serialization: Whether to use safe serialization
+            variant: Model variant
+            token: HuggingFace token
+            **kwargs: Additional arguments
+        """
+        # Import here to avoid circular imports
+        from transformers.utils import PushToHubMixin
+        
+        # Save config
+        self.config.save_pretrained(save_directory)
+        
+        # Save model weights
+        if state_dict is None:
+            state_dict = self.state_dict()
+        
+        # Use transformers' built-in saving mechanism
+        super().save_pretrained(
+            save_directory=save_directory,
+            is_main_process=is_main_process,
+            state_dict=state_dict,
+            save_function=save_function,
+            push_to_hub=push_to_hub,
+            max_shard_size=max_shard_size,
+            safe_serialization=safe_serialization,
+            variant=variant,
+            token=token,
+            **kwargs
+        )
     
     def forward(
         self,

@@ -72,4 +72,28 @@ class ChangeStar1xdConfig(PretrainedConfig):
             "num_change_classes": self.num_change_classes,
             "loss_config": self.loss_config,
         })
-        return output 
+        return output
+    
+    @classmethod
+    def from_pretrained(cls, pretrained_model_name_or_path, **kwargs):
+        """
+        Load a configuration from a pretrained model.
+        
+        Args:
+            pretrained_model_name_or_path (str): Path to the pretrained model directory or model identifier from the Hub
+            **kwargs: Additional keyword arguments
+            
+        Returns:
+            ChangeStar1xdConfig: The loaded configuration
+        """
+        return super().from_pretrained(pretrained_model_name_or_path, **kwargs)
+    
+    def save_pretrained(self, save_directory, **kwargs):
+        """
+        Save the configuration to a directory.
+        
+        Args:
+            save_directory (str): Directory to save the configuration to
+            **kwargs: Additional keyword arguments
+        """
+        super().save_pretrained(save_directory, **kwargs) 

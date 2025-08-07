@@ -12,7 +12,13 @@ in this repository.
 """
 
 from .change_detection_pipeline import ChangeDetectionPipeline
+from .unified_change_detection_pipeline import (
+    UnifiedChangeDetectionPipeline,
+    ChangeDetectionMethod,
+)
 
 __all__ = [
     "ChangeDetectionPipeline",
+    "UnifiedChangeDetectionPipeline",
+    "ChangeDetectionMethod",
 ] 

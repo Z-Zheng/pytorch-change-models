@@ -108,6 +108,161 @@ class AnyChangeModel(PreTrainedModel):
         # SAM weights are loaded from checkpoint, no additional initialization needed
         pass
     
+    @classmethod
+    def from_pretrained(
+        cls,
+        pretrained_model_name_or_path: Optional[Union[str, os.PathLike]],
+        *model_args,
+        config: Optional[Union[AnyChangeConfig, str, os.PathLike]] = None,
+        cache_dir: Optional[Union[str, os.PathLike]] = None,
+        ignore_mismatched_sizes: bool = False,
+        force_download: bool = False,
+        local_files_only: bool = False,
+        token: Optional[Union[str, bool]] = None,
+        revision: str = "main",
+        use_safetensors: Optional[bool] = None,
+        weights_only: bool = True,
+        **kwargs,
+    ):
+        """
+        Load a pretrained AnyChange model.
+        
+        Args:
+            pretrained_model_name_or_path: Path to pretrained model or model identifier
+            config: Model configuration
+            cache_dir: Directory to cache downloaded models
+            ignore_mismatched_sizes: Whether to ignore mismatched sizes
+            force_download: Whether to force download
+            local_files_only: Whether to use only local files
+            token: HuggingFace token for private models
+            revision: Model revision
+            use_safetensors: Whether to use safetensors
+            weights_only: Whether to load only weights
+            **kwargs: Additional arguments
+            
+        Returns:
+            Loaded AnyChange model
+        """
+        # Load config if not provided
+        if config is None:
+            config = cls.config_class.from_pretrained(
+                pretrained_model_name_or_path,
+                cache_dir=cache_dir,
+                force_download=force_download,
+                local_files_only=local_files_only,
+                token=token,
+                revision=revision,
+                **kwargs
+            )
+        
+        # Create model instance
+        model = cls(config, *model_args, **kwargs)
+        
+        # Load SAM weights if they exist in the checkpoint
+        if pretrained_model_name_or_path is not None:
+            # Check if SAM weights are included in the checkpoint
+            sam_weights_path = os.path.join(pretrained_model_name_or_path, "sam_weights")
+            if os.path.exists(sam_weights_path):
+                # Load SAM weights from the checkpoint
+                sam_checkpoint_path = os.path.join(sam_weights_path, f"sam_{config.model_type}_01ec64.pth")
+                if os.path.exists(sam_checkpoint_path):
+                    # Reload SAM with the checkpoint weights
+                    model.sam = sam_model_registry[config.model_type](checkpoint=sam_checkpoint_path)
+                    model.sam = model.sam.to(model.device)
+                    
+                    # Reinitialize mask generator with new SAM
+                    model.maskgen = ModularAnyChange(
+                        model.sam,
+                        points_per_side=config.points_per_side,
+                        points_per_batch=config.points_per_batch,
+                        pred_iou_thresh=config.pred_iou_thresh,
+                        stability_score_thresh=config.stability_score_thresh,
+                        stability_score_offset=config.stability_score_offset,
+                        box_nms_thresh=config.box_nms_thresh,
+                        min_mask_region_area=config.min_mask_region_area,
+                    )
+                    
+                    # Reinitialize layer normalization inverse transform
+                    layernorm = model.sam.image_encoder.neck[3]
+                    w = layernorm.weight.data
+                    b = layernorm.bias.data
+                    w = w.reshape(w.size(0), 1, 1)
+                    b = b.reshape(b.size(0), 1, 1)
+                    model.inv_transform = lambda e: (e - b) / w
+        
+        return model
+    
+    def save_pretrained(
+        self,
+        save_directory: Union[str, os.PathLike],
+        is_main_process: bool = True,
+        state_dict: Optional[dict] = None,
+        save_function: callable = torch.save,
+        push_to_hub: bool = False,
+        max_shard_size: Union[int, str] = "5GB",
+        safe_serialization: bool = True,
+        variant: Optional[str] = None,
+        token: Optional[Union[str, bool]] = None,
+        save_peft_format: bool = True,
+        **kwargs,
+    ):
+        """
+        Save the AnyChange model to a directory.
+        
+        Args:
+            save_directory: Directory to save the model
+            is_main_process: Whether this is the main process
+            state_dict: State dictionary to save
+            save_function: Function to use for saving
+            push_to_hub: Whether to push to HuggingFace Hub
+            max_shard_size: Maximum shard size
+            safe_serialization: Whether to use safe serialization
+            variant: Model variant
+            token: HuggingFace token
+            save_peft_format: Whether to save in PEFT format
+            **kwargs: Additional arguments
+        """
+        # Create save directory
+        os.makedirs(save_directory, exist_ok=True)
+        
+        # Save configuration
+        self.config.save_pretrained(save_directory)
+        
+        # Save SAM weights if they exist
+        sam_weights_dir = os.path.join(save_directory, "sam_weights")
+        os.makedirs(sam_weights_dir, exist_ok=True)
+        
+        # Copy SAM checkpoint if it exists
+        if hasattr(self.config, 'sam_checkpoint') and os.path.exists(self.config.sam_checkpoint):
+            import shutil
+            sam_filename = f"sam_{self.config.model_type}_01ec64.pth"
+            sam_dest_path = os.path.join(sam_weights_dir, sam_filename)
+            shutil.copy2(self.config.sam_checkpoint, sam_dest_path)
+            
+            # Update config to point to the saved SAM weights
+            self.config.sam_checkpoint = sam_dest_path
+        
+        # Save model state dict (if any additional weights exist)
+        if state_dict is None:
+            state_dict = self.state_dict()
+        
+        # Only save if there are actual model weights (not just SAM)
+        if state_dict:
+            # Use parent's save_pretrained for the actual model weights
+            super().save_pretrained(
+                save_directory=save_directory,
+                is_main_process=is_main_process,
+                state_dict=state_dict,
+                save_function=save_function,
+                push_to_hub=push_to_hub,
+                max_shard_size=max_shard_size,
+                safe_serialization=safe_serialization,
+                variant=variant,
+                token=token,
+                save_peft_format=save_peft_format,
+                **kwargs
+            )
+    
     def set_hyperparameters(
         self,
         change_confidence_threshold: float = None,
