@@ -22,7 +22,7 @@ The resulting model possesses inherent zero-shot change detection capabilities a
 Comprehensive experiments suggest Changen2 has superior spatiotemporal scalability in data generation, e.g., Changen2 model trained on 256$^2$ pixel single-temporal images can yield time series of any length and resolutions of 1,024^2 pixels.
 Changen2 pre-trained models exhibit superior zero-shot performance (narrowing the performance gap to 3% on LEVIR-CD and approximately 10% on both S2Looking and SECOND, compared to fully supervised counterpart) and transferability across multiple types of change tasks, including ordinary and off-nadir building change, land-use/land-cover change, and disaster assessment.
 
-## Get Started (TBD)
+## Get Started (continuously updated)
 
 ### Change Event Simulation
 ```python
@@ -37,17 +37,38 @@ ces.next_time_contour_gen
 ```
 
 ### Resolution-Scalable DiT models
-
+You can use our RSDiT architecture as follows:
 ```python
 from torchange.models.changen2 import RSDiT_models
 ```
 
 ### Changen2 pre-trained ChangeStar (1x256) models
+We provide the ChangeStar (1x256) architecture along with several pre-trained models, available for both further research and direct application.
 
 See this [notebook](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/changen2_pretrained_changestar1x256_inference_demo.ipynb) demo for model inference
 
 ```python
+from torchange.models.changestar_1xd import ChangeStar1xd
 from torchange.models.changen2 import changestar_1x256
+
+# zero-shot building change detection models
+from torchange.models.changen2 import s1_init_s1c1_changestar_vitb_1x256
+from torchange.models.changen2 import s1_init_s1c1_changestar_vitl_1x256
+
+# zero-shot semantic (land use/land cover) change detection model
+from torchange.models.changen2 import s9_init_s9c1_changestar_vitb_1x256
+
+# zero-shot class-agnostic change detection model
+# also can be used as a pre-trained startpoint for binary change detection models
+from torchange.models.changen2 import s0_init_s1c1_changestar_vitb_1x256
+# The two below load the above pre-trained weights and can only be used as pre-trained startpoint.
+from torchange.models.changen2 import s0_init_s1c5_changestar_vitb_1x256
+from torchange.models.changen2 import s0_init_s9c1_changestar_vitb_1x256
+# This one was fine-tuned on xView2 dataset, see Table 6 in our paper for model performance
+from torchange.models.changen2 import s0_init_xView2_ft_s1c5_changestar_vitb_1x256
+# alias for s0_init_xView2_ft_s1c5_changestar_vitb_1x256
+# providing an out-of-box building damage assessment model
+from torchange.models.changen2 import building_damage_assessment_model
 ```
 
 ### Synthetic Change Datasets
