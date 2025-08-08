@@ -75,9 +75,9 @@ from torchange.models.changen2 import building_damage_assessment_model
 ```
 
 ### Synthetic Change Datasets
-[Changen2-S1-15k](https://huggingface.co/datasets/EVER-Z/Changen2-S1-15k), a building change dataset with 15k pairs and 2 change types), 0.3-1m spatial resolution, RGB bands
+[Changen2-S1-15k](https://huggingface.co/datasets/EVER-Z/Changen2-S1-15k), a building change dataset with 15k pairs and 2 change types, 0.3-1 m spatial resolution, RGB bands
 
-[Changen2-S9-27k](https://huggingface.co/datasets/EVER-Z/Changen2-S9-27k), an urban land-use/landcover change dataset with 27k pairs and 38 change types), 0.25-0.5m spatial resolution, RGB bands
+[Changen2-S9-27k](https://huggingface.co/datasets/EVER-Z/Changen2-S9-27k), an urban land-use/land-cover change dataset with 27k pairs and 38 change types, 0.25-0.5 m spatial resolution, RGB bands
 
 We also provide a convenient version you can load via huggingface's datasets library, see [example](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/load_Changen2_synthetic_change_dataset.ipynb)
 
