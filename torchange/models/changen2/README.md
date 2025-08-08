@@ -45,7 +45,7 @@ from torchange.models.changen2 import RSDiT_models
 ### Changen2 pre-trained ChangeStar (1x256) models
 We provide the ChangeStar (1x256) architecture along with several pre-trained models, available for both further research and direct application.
 
-See this [notebook](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/changen2_pretrained_changestar1x256_inference_demo.ipynb) demo for model inference
+See this [notebook](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/changen2_pretrained_changestar1x256_inference_demo.ipynb) demo for model inference.
 
 ```python
 from torchange.models.changestar_1xd import ChangeStar1xd
