@@ -83,7 +83,7 @@ We also provide a convenient version you can load via huggingface's datasets lib
 
 ## Citation
 If you find our project helpful, we would greatly appreciate it if you could kindly cite our papers:
-```
+```bibtex
 @article{changen2,
   author={Zheng, Zhuo and Ermon, Stefano and Kim, Dongjun and Zhang, Liangpei and Zhong, Yanfei},
   journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
