@@ -55,6 +55,7 @@ from torchange.models.changen2 import changestar_1x256
 
 [Changen2-S9-27k](https://huggingface.co/datasets/EVER-Z/Changen2-S9-27k), an urban land-use/landcover change dataset with 27k pairs and 38 change types), 0.25-0.5m spatial resolution, RGB bands
 
+We also provide a convenient version you can load via huggingface's datasets library, see [example](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/load_Changen2_synthetic_change_dataset.ipynb)
 
 ## Citation
 If you find our project helpful, we would greatly appreciate it if you could kindly cite our papers:
