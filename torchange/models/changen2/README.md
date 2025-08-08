@@ -61,11 +61,14 @@ from torchange.models.changen2 import s9_init_s9c1_changestar_vitb_1x256
 # zero-shot class-agnostic change detection model
 # also can be used as a pre-trained startpoint for binary change detection models
 from torchange.models.changen2 import s0_init_s1c1_changestar_vitb_1x256
+
 # The two below load the above pre-trained weights and can only be used as pre-trained startpoint.
 from torchange.models.changen2 import s0_init_s1c5_changestar_vitb_1x256
 from torchange.models.changen2 import s0_init_s9c1_changestar_vitb_1x256
+
 # This one was fine-tuned on xView2 dataset, see Table 6 in our paper for model performance
 from torchange.models.changen2 import s0_init_xView2_ft_s1c5_changestar_vitb_1x256
+
 # alias for s0_init_xView2_ft_s1c5_changestar_vitb_1x256
 # providing an out-of-box building damage assessment model
 from torchange.models.changen2 import building_damage_assessment_model
