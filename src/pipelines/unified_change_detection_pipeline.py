@@ -476,7 +476,7 @@ class UnifiedChangeDetectionPipeline(Pipeline):
         # Convert to binary mask
         if hasattr(change_masks, 'rles') and len(change_masks.rles) > 0:
             # Convert RLE masks to binary mask
-            from libs.segment_any.segment_anything.utils.amg import rle_to_mask
+            from segment_anything.utils.amg import rle_to_mask
             
             h, w = change_masks['original_size']
             change_mask = np.zeros((h, w), dtype=np.uint8)
