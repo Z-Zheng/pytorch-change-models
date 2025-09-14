@@ -10,7 +10,7 @@ import ever.module as M
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchange.module._sam_vit import SAMEncoder
+from torchange.module.sam_vit import SAMEncoder, SimpleFeaturePyramid
 
 
 @er.registry.MODEL.register()
