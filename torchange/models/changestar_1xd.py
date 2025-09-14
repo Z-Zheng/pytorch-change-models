@@ -49,10 +49,10 @@ def sc_mse_loss(s1_logit, s2_logit, gt_masks):
 class ChangeStar1xd(er.ERModule):
     def __init__(self, config):
         super().__init__(config)
-        self.encoder = er.registry.MODEL[self.config.encoder.type](self.config.encoder.params)
+        self.encoder = er.builder.make_model(self.config.encoder)
 
-        self.cfg.head.in_channels = 2 * self.config.encoder.params.out_channels
-        self.cfg.head.out_channels = self.config.encoder.params.out_channels
+        self.cfg.head.in_channels = 2 * self.encoder.config.out_channels
+        self.cfg.head.out_channels = self.encoder.config.out_channels
 
         self.head = ChangeMixinBiSupN1(**self.cfg.head)
         self.init_from_weight_file()

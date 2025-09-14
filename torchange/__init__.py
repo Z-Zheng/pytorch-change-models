@@ -19,4 +19,14 @@ def _import_dataclass():
             importlib.import_module(full_module_name)
 
 
+def _import_modules():
+    module_pkg = __name__ + ".module"
+    package_dir = Path(__file__).parent / "module"
+    for module_info in pkgutil.iter_modules([str(package_dir)]):
+        if not module_info.name.startswith("_"):
+            full_module_name = f"{module_pkg}.{module_info.name}"
+            importlib.import_module(full_module_name)
+
+
 _import_dataclass()
+_import_modules()

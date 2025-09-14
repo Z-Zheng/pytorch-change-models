@@ -67,10 +67,8 @@ def binary_change_detection_evaluate(model, dataloader, log_dir=None, logger=Non
 
 
 @er.registry.CALLBACK.register()
-class BinaryChangeDetectionPixelEval(er.Callback):
-    """Callback that evaluates binary change detection metrics."""
-
-    def __init__(self, data_cfg, epoch_interval, prior=101):
+class BinaryChangeDetectionPixelEvalWithDataloader(er.Callback):
+    def __init__(self, dataloader, epoch_interval, prior=101):
         super().__init__(
             epoch_interval=epoch_interval,
             only_master=False,
@@ -78,11 +76,9 @@ class BinaryChangeDetectionPixelEval(er.Callback):
             before_train=False,
             after_train=True,
         )
-        dataloader = er.builder.make_dataloader(data_cfg)
         self.dataloader = er.data.as_ddp_inference_loader(dataloader)
         self.score_tracker = er.metric.ScoreTracker()
-
-        self.score_table_name = data_cfg.type
+        self.score_table_name = 'bcd'
 
     def func(self):
         score = binary_change_detection_evaluate(self.unwrapped_model, self.dataloader, self.model_dir, self.logger)
@@ -96,3 +92,19 @@ class BinaryChangeDetectionPixelEval(er.Callback):
 
         best_score = self.score_tracker.highest_score('eval/f1')
         self.logger.info(f"best F1: {best_score['eval/f1']}, at step {best_score['step']}")
+
+
+@er.registry.CALLBACK.register()
+class BinaryChangeDetectionPixelEval(BinaryChangeDetectionPixelEvalWithDataloader):
+    """Callback that evaluates binary change detection metrics."""
+
+    def __init__(self, data_cfg, epoch_interval, prior=101):
+        dataloader = er.builder.make_dataloader(data_cfg)
+
+        super().__init__(
+            dataloader=dataloader,
+            epoch_interval=epoch_interval,
+            prior=prior,
+        )
+
+        self.score_table_name = data_cfg.type
