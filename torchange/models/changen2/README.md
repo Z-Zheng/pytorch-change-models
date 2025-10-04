@@ -45,7 +45,7 @@ from torchange.models.changen2 import RSDiT_models
 ### Changen2 pre-trained ChangeStar (1x256) models
 We provide the ChangeStar (1x256) architecture along with several pre-trained models, available for both further research and direct application.
 
-See this [notebook](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/changen2_pretrained_changestar1x256_inference_demo.ipynb) demo for model inference
+See this [notebook](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/changen2_pretrained_changestar1x256_inference_demo.ipynb) demo for model inference.
 
 ```python
 from torchange.models.changestar_1xd import ChangeStar1xd
@@ -75,15 +75,15 @@ from torchange.models.changen2 import building_damage_assessment_model
 ```
 
 ### Synthetic Change Datasets
-[Changen2-S1-15k](https://huggingface.co/datasets/EVER-Z/Changen2-S1-15k), a building change dataset with 15k pairs and 2 change types), 0.3-1m spatial resolution, RGB bands
+[Changen2-S1-15k](https://huggingface.co/datasets/EVER-Z/Changen2-S1-15k), a building change dataset with 15k pairs and 2 change types, 0.3-1 m spatial resolution, RGB bands
 
-[Changen2-S9-27k](https://huggingface.co/datasets/EVER-Z/Changen2-S9-27k), an urban land-use/landcover change dataset with 27k pairs and 38 change types), 0.25-0.5m spatial resolution, RGB bands
+[Changen2-S9-27k](https://huggingface.co/datasets/EVER-Z/Changen2-S9-27k), an urban land-use/land-cover change dataset with 27k pairs and 38 change types, 0.25-0.5 m spatial resolution, RGB bands
 
 We also provide a convenient version you can load via huggingface's datasets library, see [example](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/load_Changen2_synthetic_change_dataset.ipynb)
 
 ## Citation
 If you find our project helpful, we would greatly appreciate it if you could kindly cite our papers:
-```
+```bibtex
 @article{changen2,
   author={Zheng, Zhuo and Ermon, Stefano and Kim, Dongjun and Zhang, Liangpei and Zhong, Yanfei},
   journal={IEEE Transactions on Pattern Analysis and Machine Intelligence}, 
