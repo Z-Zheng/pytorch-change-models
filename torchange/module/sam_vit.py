@@ -633,8 +633,12 @@ class SimpleFeaturePyramid(nn.Module):
 
     def forward(self, x):
         results = []
+        if isinstance(x, torch.Tensor):
+            x_list = [x, x, x, x]
+        else:
+            x_list = x
 
-        for stage in self.stages:
+        for stage, x in zip(self.stages, x_list):
             results.append(stage(x))
 
         return results
