@@ -81,6 +81,14 @@ from torchange.models.changen2 import building_damage_assessment_model
 
 We also provide a convenient version you can load via huggingface's datasets library, see [example](https://github.com/Z-Zheng/pytorch-change-models/blob/main/examples/load_Changen2_synthetic_change_dataset.ipynb)
 
+
+### Pretrained RSDiT Models (huggingface)
+
+[RSDiT-B-2-xView2-256](https://huggingface.co/EVER-Z/Changen2_RSDiT-B-2-xView2-256)
+
+[RSDiT-B-2-OEM-256](https://huggingface.co/EVER-Z/Changen2_RSDiT-B-2-OEM-256)
+
+
 ## Citation
 If you find our project helpful, we would greatly appreciate it if you could kindly cite our papers:
 ```bibtex
