@@ -1,0 +1,16 @@
+[submodule "libs/diffusers"]
+	path = libs/diffusers
+	url = https://ghfast.top/https://github.com/huggingface/diffusers.git
+
+
+[submodule "libs/transformers"]
+	path = libs/transformers
+	url = https://ghfast.top/https://github.com/huggingface/transformers.git
+
+[submodule "libs/ever"]
+	path = libs/ever
+	url = https://ghfast.top/https://github.com/Z-Zheng/ever.git
+
+[submodule "libs/segment_anything"]
+	path = libs/segment_anything
+	url = https://ghfast.top/https://github.com/facebookresearch/segment-anything
