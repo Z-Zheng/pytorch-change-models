@@ -13,7 +13,7 @@ from typing import Optional, Tuple, Type, List
 
 import ever as er
 import math
-from timm.models.layers import DropPath
+from timm.layers import DropPath
 
 
 # This class and its supporting functions below lightly adapted from the ViTDet backbone available at: https://github.com/facebookresearch/detectron2/blob/main/detectron2/modeling/backbone/vit.py # noqa
