@@ -19,10 +19,6 @@ try:
 except ImportError:
     print(f"segmentation_models_pytorch not found. please `pip install segmentation_models_pytorch`")
 
-CHANGE = 'change_prediction'
-T1SEM = 't1_semantic_prediction'
-T2SEM = 't2_semantic_prediction'
-
 
 def bitemporal_forward(module, x):
     x = rearrange(x, 'b (t c) h w -> (b t) c h w', t=2)

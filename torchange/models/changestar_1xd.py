@@ -11,10 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import ever.module as M
 import ever.module.loss as L
-
-CHANGE = 'change_prediction'
-T1SEM = 't1_semantic_prediction'
-T2SEM = 't2_semantic_prediction'
+from torchange.utils.outputs import ChangeDetectionModelOutput
 
 
 def bitemporal_forward(module, x):
@@ -85,12 +82,12 @@ class ChangeStar1xd(er.ERModule):
             }
 
     @torch.amp.autocast('cuda', dtype=torch.float32)
-    def loss(self, preds, y):
+    def loss(self, preds: ChangeDetectionModelOutput, y):
         # masks[0] - cls, masks[1] - cls, masks[2] - change
         # masks[0] - cls, masks[1] - change
         # masks[0] - change
         gt_change = y['masks'][-1].to(torch.float32)
-        change_logit = preds[CHANGE].to(torch.float32)
+        change_logit = preds.change_prediction.to(torch.float32)
 
         loss_dict = dict()
         if hasattr(self.cfg.loss, 'change'):
@@ -119,17 +116,17 @@ class ChangeStar1xd(er.ERModule):
                         c_dice_loss=L.dice_loss_with_logits(change_logit, gt_change),
                     )
 
-        if preds[T1SEM] is not None and 't1' in self.cfg.loss:
-            t1_losses = self._semantic_loss(preds[T1SEM], y['masks'][0])
+        if preds.t1_semantic_prediction is not None and 't1' in self.cfg.loss:
+            t1_losses = self._semantic_loss(preds.t1_semantic_prediction, y['masks'][0])
             loss_dict.update({f"t1_{k}": v for k, v in t1_losses.items()})
 
-        if preds[T2SEM] is not None and 't2' in self.cfg.loss:
-            t2_losses = self._semantic_loss(preds[T2SEM], y['masks'][1])
+        if preds.t2_semantic_prediction is not None and 't2' in self.cfg.loss:
+            t2_losses = self._semantic_loss(preds.t2_semantic_prediction, y['masks'][1])
             loss_dict.update({f"t2_{k}": v for k, v in t2_losses.items()})
 
         if 'sc' in self.cfg.loss:
             loss_dict.update(dict(
-                sc_mse_loss=sc_mse_loss(preds[T1SEM], preds[T2SEM], y['masks'])
+                sc_mse_loss=sc_mse_loss(preds.t1_semantic_prediction, preds.t2_semantic_prediction, y['masks'])
             ))
 
         return loss_dict
@@ -209,11 +206,11 @@ class ChangeMixinBiSupN1(nn.Module):
             t2_semantic_logit = self.semantic_conv[1](t2_feature)
 
         if self.training:
-            return {
-                CHANGE: change_logit,
-                T1SEM: t1_semantic_logit if self.num_semantic_classes else None,
-                T2SEM: t2_semantic_logit if self.num_semantic_classes else None,
-            }
+            return ChangeDetectionModelOutput(
+                change_prediction=change_logit,
+                t1_semantic_prediction=t1_semantic_logit if self.num_semantic_classes else None,
+                t2_semantic_prediction=t2_semantic_logit if self.num_semantic_classes else None,
+            )
         else:
             def _act(logit):
                 if logit.size(1) > 1:
@@ -221,8 +218,8 @@ class ChangeMixinBiSupN1(nn.Module):
                 else:
                     return logit.sigmoid()
 
-            return {
-                CHANGE: _act(change_logit),
-                T1SEM: _act(t1_semantic_logit) if self.num_semantic_classes else None,
-                T2SEM: _act(t2_semantic_logit) if self.num_semantic_classes else None,
-            }
+            return ChangeDetectionModelOutput(
+                change_prediction=_act(change_logit),
+                t1_semantic_prediction=_act(t1_semantic_logit) if self.num_semantic_classes else None,
+                t2_semantic_prediction=_act(t2_semantic_logit) if self.num_semantic_classes else None,
+            )
