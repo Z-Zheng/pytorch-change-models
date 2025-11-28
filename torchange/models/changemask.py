@@ -11,14 +11,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from einops import rearrange
+from torchange.utils.outputs import ChangeDetectionModelOutput
 
 try:
     import segmentation_models_pytorch as smp
     from segmentation_models_pytorch.decoders.unet.decoder import UnetDecoder
 except ImportError:
     print(f"segmentation_models_pytorch not found. please `pip install segmentation_models_pytorch`")
-
-
 
 CHANGE = 'change_prediction'
 T1SEM = 't1_semantic_prediction'
@@ -207,11 +206,11 @@ class ChangeMask(er.ERModule):
         if self.training:
             return loss(s1_logit, s2_logit, c_logit, y['masks'])
 
-        return {
-            T1SEM: s1_logit.softmax(dim=1),
-            T2SEM: s2_logit.softmax(dim=1),
-            CHANGE: c_logit.sigmoid(),
-        }
+        return ChangeDetectionModelOutput(
+            change_prediction=c_logit.sigmoid(),
+            t1_semantic_prediction=s1_logit.softmax(dim=1),
+            t2_semantic_prediction=s2_logit.softmax(dim=1),
+        )
 
     def set_default_config(self):
         self.cfg.update(dict(
