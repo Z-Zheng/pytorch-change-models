@@ -59,7 +59,7 @@ This is also a tutorial for junior researchers interested in contemporary change
 - (ChangeSparse) Unifying Remote Sensing Change Detection via Deep Probabilistic Change Models: from Principles, Models to Applications, ISPRS P&RS 2024. [[`Paper`](https://www.sciencedirect.com/science/article/pii/S0924271624002624)], [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/blob/main/torchange/models/changesparse.py)]
 
 #### 1.1 one-to-many semantic change detection
-- (ChangeOS) Building damage assessment for rapid disaster response with a deep object-based semantic change detection framework: from natural disasters to man-made disasters, RSE 2021. [[`Paper`](https://www.sciencedirect.com/science/article/pii/S0034425721003564)], [[`Code`](https://github.com/Z-Zheng/ChangeOS)]
+- (ChangeOS) Building damage assessment for rapid disaster response with a deep object-based semantic change detection framework: from natural disasters to man-made disasters, RSE 2021. [[`Paper`](https://www.sciencedirect.com/science/article/pii/S0034425721003564)], [[`Inference API Code`](https://github.com/Z-Zheng/ChangeOS)], [[`Trainable Model Code`](https://github.com/Z-Zheng/pytorch-change-models/blob/main/torchange/models/changeos.py)]
 
 #### 1.2 many-to-many semantic change detection
 - (ChangeMask) ChangeMask: Deep Multi-task Encoder-Transformer-Decoder Architecture for Semantic Change Detection, ISPRS P&RS 2022. [[`Paper`](https://www.sciencedirect.com/science/article/pii/S0924271621002835)], [[`Code`](https://github.com/Z-Zheng/pytorch-change-models/blob/main/torchange/models/changemask.py)]
