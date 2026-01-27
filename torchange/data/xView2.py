@@ -16,7 +16,7 @@ import torch
 from tqdm import tqdm
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class xView2(BitemporalDataset, er.ERDataset):
     """xView2 building damage assessment dataset."""
 
@@ -152,7 +152,7 @@ class xView2(BitemporalDataset, er.ERDataset):
         ))
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class HFxView2(HFBitemporalDataset):
     """HuggingFace version of xView2 supporting sliding window access."""
 

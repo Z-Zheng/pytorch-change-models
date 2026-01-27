@@ -36,7 +36,7 @@ EVENTS = [
 ]
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class HFBRIGHT(HFBitemporalDataset):
     """HuggingFace implementation of the BRIGHT benchmark."""
 

@@ -580,7 +580,7 @@ class ChangeMixin2(nn.Module):
             }
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeStar2(er.ERModule):
     def __init__(self, config):
         super().__init__(config)

@@ -124,7 +124,7 @@ class DeepHead(nn.Module):
         return x
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeOSHead(er.ERModule):
     def __init__(self, config):
         super().__init__(config)
@@ -238,7 +238,7 @@ def _object_vote(loc, dam, cls_weight_list=(8., 38., 25., 11.)):
     return new_dam
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeOS(er.ERModule):
     def __init__(self, config):
         super().__init__(config)

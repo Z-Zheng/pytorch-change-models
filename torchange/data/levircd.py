@@ -11,7 +11,7 @@ import os
 from torchange.data.bitemporal import BitemporalDataset
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class LEVIRCD(BitemporalDataset, er.ERDataset):
     """LEVIR-CD dataset for building change detection."""
 

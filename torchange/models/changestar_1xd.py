@@ -3,7 +3,6 @@
 
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
-import os
 import ever as er
 from einops import rearrange
 import torch
@@ -42,7 +41,7 @@ def sc_mse_loss(s1_logit, s2_logit, gt_masks):
     return losses.mean()
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeStar1xd(er.ERModule):
     def __init__(self, config):
         super().__init__(config)

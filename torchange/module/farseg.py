@@ -13,7 +13,7 @@ import torch.nn.functional as F
 from torchange.module.sam_vit import SAMEncoder, SimpleFeaturePyramid
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class FarSegEncoder(M.ResNetEncoder):
     def __init__(self, config):
         super().__init__(config)
@@ -166,7 +166,7 @@ class FarSegMixin(nn.Module):
         return features
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class SAMEncoderFarSeg(SAMEncoder):
     def __init__(self, cfg):
         super().__init__(cfg)
@@ -191,7 +191,7 @@ class SAMEncoderFarSeg(SAMEncoder):
         ))
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class DINOv3ViTLFarSeg(er.ERModule):
     def __init__(self, cfg):
         super().__init__(cfg)

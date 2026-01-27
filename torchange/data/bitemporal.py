@@ -241,7 +241,7 @@ class BitemporalDataset(Dataset):
         return len(self.t1_image_fps)
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class HFBitemporalDataset(er.ERDataset):
     """Bitemporal dataset backed by a HuggingFace dataset."""
 

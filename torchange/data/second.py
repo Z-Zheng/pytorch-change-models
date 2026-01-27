@@ -10,7 +10,7 @@ from pathlib import Path
 import torch
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class BinarySECOND(BitemporalDataset, er.ERDataset):
     """Binary change detection subset of the SECOND dataset."""
 
@@ -41,7 +41,7 @@ class BinarySECOND(BitemporalDataset, er.ERDataset):
         ))
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class SECOND(BitemporalDataset, er.ERDataset):
     """Semantic change detection SECOND dataset."""
 

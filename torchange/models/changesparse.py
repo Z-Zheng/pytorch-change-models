@@ -576,7 +576,7 @@ class SparseChangeTransformer(nn.Module):
         return feature
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeSparseBCD(er.ERModule, LossMixin):
     def __init__(self, config):
         super().__init__(config)
@@ -971,7 +971,7 @@ class FuseConv(nn.Sequential):
         return out
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeSparseO2M(er.ERModule, LossMixin):
     def __init__(self, config):
         super().__init__(config)
@@ -1130,7 +1130,7 @@ class ChangeSparseO2M(er.ERModule, LossMixin):
             return self.parameters()
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeSparseM2M(er.ERModule, LossMixin):
     def __init__(self, config):
         super().__init__(config)

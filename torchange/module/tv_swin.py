@@ -31,7 +31,7 @@ swin_transformer.SwinTransformer.get_stages = get_stages
 swin_transformer.SwinTransformer.forward = forward
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class TVSwinTransformer(er.ERModule):
     OUT_CHANNELS = {
         'swin_s': [96 * (2 ** i) for i in range(4)],

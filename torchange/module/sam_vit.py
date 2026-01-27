@@ -644,7 +644,7 @@ class SimpleFeaturePyramid(nn.Module):
         return results
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class SAMEncoder(er.ERModule):
     def __init__(self, config):
         super().__init__(config)

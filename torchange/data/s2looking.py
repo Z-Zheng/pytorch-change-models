@@ -11,7 +11,7 @@ import math
 import os
 
 
-@er.registry.DATASET.register()
+@er.registry.DATASET.register(verbose=False)
 class S2Looking(BitemporalDataset, er.ERDataset):
     """S2Looking dataset for satellite image change detection."""
 

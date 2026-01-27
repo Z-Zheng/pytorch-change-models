@@ -167,7 +167,7 @@ class TemporalSymmetricTransformer(nn.Module):
         return change_features
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeMask(er.ERModule):
     def __init__(self, cfg):
         super().__init__(cfg)
