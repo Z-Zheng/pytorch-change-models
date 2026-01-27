@@ -66,6 +66,7 @@ class mmChangeStar1xd(ChangeStar1xd):
 
         preds = self.head(opt_embed, sar_embed)
 
+        y['masks'][0] = (y['masks'][0] > 0).to(torch.float32)
         if self.training:
             return self.loss(preds, y)
 
