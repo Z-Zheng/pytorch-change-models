@@ -60,7 +60,7 @@ class MultiClassPixelEval(er.Callback):
             img = img.to(er.auto_device())
             predictions = self.model(img)
 
-            pr_change = predictions['change_prediction'].cpu()
+            pr_change = predictions['change_prediction'].argmax(dim=1).cpu()
             pr_change = pr_change.numpy()
             gt_change = gt['masks'][-1].numpy()
 
