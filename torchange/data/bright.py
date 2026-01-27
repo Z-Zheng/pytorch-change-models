@@ -3,8 +3,10 @@
 
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
-from torchange.data.bitemporal import HFBitemporalDataset
+import ever as er
 from enum import StrEnum
+
+from torchange.data.bitemporal import HFBitemporalDataset
 
 
 class Setup(StrEnum):
@@ -34,6 +36,7 @@ EVENTS = [
 ]
 
 
+@er.registry.DATASET.register()
 class HFBRIGHT(HFBitemporalDataset):
     """HuggingFace implementation of the BRIGHT benchmark."""
 
