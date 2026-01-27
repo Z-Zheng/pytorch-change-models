@@ -22,12 +22,16 @@ class FarSegEncoder(M.ResNetEncoder):
         else:
             max_channels = 2048
         self.fpn = M.FPN([max_channels // (2 ** (3 - i)) for i in range(4)], 256)
-        self.fsr = M.FSRelation(max_channels,
-                                [256 for _ in range(4)],
-                                256,
-                                True)
-        self.dec = M.AssymetricDecoder(256,
-                                       self.config.out_channels)
+        self.fsr = M.FSRelation(
+            max_channels,
+            [256 for _ in range(4)],
+            256,
+            True
+        )
+        self.dec = M.AssymetricDecoder(
+            256,
+            self.config.out_channels
+        )
 
     def forward(self, inputs):
         features = super().forward(inputs)
@@ -153,8 +157,9 @@ class FarSegMixin(nn.Module):
             norm_fn=M.LayerNorm2d
         )
 
-    def forward(self, x):
-        scene_embedding = F.adaptive_avg_pool2d(x[-1], 1)
+    def forward(self, x, scene_embedding=None):
+        if scene_embedding is None:
+            scene_embedding = F.adaptive_avg_pool2d(x[-1], 1)
         features = self.fpn(x)
         features = self.fsr(scene_embedding, features)
         features = self.dec(features)
@@ -184,3 +189,81 @@ class SAMEncoderFarSeg(SAMEncoder):
         self.config.update(dict(
             fpn_channels=256,
         ))
+
+
+@er.registry.MODEL.register()
+class DINOv3ViTLFarSeg(er.ERModule):
+    def __init__(self, cfg):
+        super().__init__(cfg)
+        from ever.module.dinov3 import vitl16_sat493m
+        # assert self.cfg.pretrained is not None, "Please specify the pretrained model path."
+
+        self.encoder = vitl16_sat493m(pretrained=self.cfg.pretrained, drop_path_rate=self.cfg.drop_path_rate)
+        embed_dim = self.encoder.embed_dim
+        if self.cfg.freeze_vit:
+            self.encoder.requires_grad_(False)
+
+        if self.cfg.lora:
+            from torchange.module.lora import LoraLinear
+            LoraLinear.convert_lora_linear(self.encoder, **self.cfg.lora)
+            er.info(f"applying LoRA: {self.cfg.lora}")
+
+        self.sfp = SimpleFeaturePyramid(embed_dim, embed_dim)
+        in_channels = [embed_dim for _ in range(4)]
+
+        self.farseg = FarSegMixin(
+            in_channels=in_channels,
+            fpn_channels=self.cfg.out_channels,
+            out_channels=self.cfg.out_channels,
+        )
+
+    def _forward_dinov3_four_levels(self, x):
+        outputs = self.encoder.get_intermediate_layers(x, n=[5, 11, 17, 23], reshape=True, return_class_token=True)
+        features = [out[0] for out in outputs]
+        cls_tokens = [out[1] for out in outputs]
+        features = self.sfp(features)
+        return features, cls_tokens[-1]
+
+    def _forward_dinov3_one_level(self, x):
+        output, cls_token = self.encoder.get_intermediate_layers(x, n=1, reshape=True, return_class_token=True)[0]
+        features = self.sfp(output)
+        return features, cls_token
+
+    def forward(self, x):
+        if self.cfg.dinov3_forward_mode == 'four_levels':
+            features, cls_token = self._forward_dinov3_four_levels(x)
+        elif self.cfg.dinov3_forward_mode == 'one_level':
+            features, cls_token = self._forward_dinov3_one_level(x)
+        else:
+            raise ValueError(f"Unknown dinov3_forward_mode: {self.cfg.dinov3_forward_mode}")
+        features = self.farseg(features, scene_embedding=cls_token.reshape(cls_token.shape[0], -1, 1, 1))
+
+        return features
+
+    def set_default_config(self):
+        self.config.update(dict(
+            pretrained=None,
+            freeze_vit=True,
+            drop_path_rate=0.,
+            lora=None,
+            out_channels=1024,
+            dinov3_forward_mode='four_levels',
+        ))
+
+    def custom_param_groups(self):
+        param_groups = [{'params': [], 'weight_decay': 0.}, {'params': []}]
+        for i, p in self.named_parameters():
+            if 'norm' in i:
+                param_groups[0]['params'].append(p)
+            else:
+                param_groups[1]['params'].append(p)
+        return param_groups
+
+
+if __name__ == '__main__':
+    torch.set_grad_enabled(False)
+    m = DINOv3ViTLFarSeg(dict(
+        out_channels=256,
+        dinov3_forward_mode='four_levels',
+    ))
+    er.param_util.trainable_parameters(m)
