@@ -14,11 +14,11 @@ train_data = dict(
             setting=Setup.STANDARD,
             setting_splits=['train'],
             transform=A.Compose([
-                A.RandomCrop(768, 768),
+                A.RandomCrop(640, 640),
                 A.D4(),
                 A.Normalize(
-                    (0.485, 0.456, 0.406, 0.225),
-                    (0.229, 0.224, 0.225, 0.151),
+                    (0.430, 0.411, 0.296, 0.225),
+                    (0.213, 0.156, 0.143, 0.151),
                     max_pixel_value=255
                 ),
                 A.pytorch.ToTensorV2(),
