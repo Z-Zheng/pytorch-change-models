@@ -6,8 +6,6 @@ This project provides a whole benchmark pipeline and pre-trained weights for two
 
 All models are evaluated on the standard test split using set-level mIoU.
 
-The resulting model performance (standard ML data split, set-level mIoU, test) on BRIGHT dataset is as follows:
-
 | arch                                                                                    | backbone | mIoU  | Bg    | intact | Damaged | Destroyed | Weights                                                                                    |
 |:----------------------------------------------------------------------------------------|:---------|:-----:|:------|:-------|:--------|:----------|:-------------------------------------------------------------------------------------------|
 | [**ChangeOS**](https://www.sciencedirect.com/science/article/abs/pii/S0034425721003564) | Swin-T   | 67.26 | 96.81 | 75.15  | 40.17   | 56.92     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changeos_swint_on_bright_ckpt40k) |
