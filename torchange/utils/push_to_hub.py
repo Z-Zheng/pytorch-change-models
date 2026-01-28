@@ -6,6 +6,7 @@
 import ever as er
 import fire
 from huggingface_hub import ModelCard, ModelCardData
+from huggingface_hub.utils import is_jsonable
 
 DEFAULT_MODEL_CARD = """
 ---
@@ -20,6 +21,20 @@ DEFAULT_MODEL_CARD = """
 """
 
 
+def _remove_non_json_serializable(cfg):
+    rm = []
+    for k, v in cfg.items():
+        if isinstance(v, dict):
+            _remove_non_json_serializable(v)
+        elif not is_jsonable(v):
+            rm.append(k)
+
+    for k in rm:
+        er.info(f'{k}={cfg[k]} is not JSON serializable, removed from config.')
+        cfg.pop(k)
+
+
+@er.dist.main_process_only
 def model_dir_to_hub(model_dir, repo_id, private=False, checkpoint_name=None, model_card: ModelCard = None):
     er.registry.register_modules()
     model, _ = er.infer_tool.build_from_model_dir(model_dir=model_dir, checkpoint_name=checkpoint_name)
@@ -31,6 +46,13 @@ def model_dir_to_hub(model_dir, repo_id, private=False, checkpoint_name=None, mo
     model._hub_mixin_info.model_card_template = DEFAULT_MODEL_CARD
 
     model: er.ERModule
+    if model._hub_mixin_config is None:
+        cfg = model.config.to_dict()
+        _remove_non_json_serializable(cfg)
+        model._hub_mixin_config = {
+            list(model._hub_mixin_init_parameters)[1]: cfg
+        }
+
     model.push_to_hub(repo_id=repo_id, private=private)
 
     if model_card is not None:
