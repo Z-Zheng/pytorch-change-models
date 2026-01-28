@@ -9,7 +9,7 @@ from torchange.metrics.scd import MultiClassPixelEval
 from torchange.data.bright import Setup, HFBRIGHT
 
 
-@er.registry.CALLBACK.register()
+@er.registry.CALLBACK.register(verbose=False)
 class BRIGHTEval(MultiClassPixelEval):
     def __init__(self, epoch_interval, splits=('test',), setting=Setup.STANDARD):
         super().__init__(

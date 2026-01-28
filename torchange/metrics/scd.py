@@ -15,7 +15,7 @@ __all__ = [
 ]
 
 
-@er.registry.CALLBACK.register()
+@er.registry.CALLBACK.register(verbose=False)
 class MultiClassPixelEval(er.Callback):
     def __init__(self, data_cfg: Dict, num_classes, epoch_interval, prior=101, class_names=None):
         super().__init__(

@@ -161,7 +161,7 @@ def semantic_change_detection_evaluate(model, dataloader, model_dir=None, logger
     }
 
 
-@er.registry.CALLBACK.register()
+@er.registry.CALLBACK.register(verbose=False)
 class SemanticChangeDetectionEval(er.Callback):
     """Callback that evaluates SECOND metrics during training."""
 

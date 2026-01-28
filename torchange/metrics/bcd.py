@@ -66,7 +66,7 @@ def binary_change_detection_evaluate(model, dataloader, log_dir=None, logger=Non
     }
 
 
-@er.registry.CALLBACK.register()
+@er.registry.CALLBACK.register(verbose=False)
 class BinaryChangeDetectionPixelEvalWithDataloader(er.Callback):
     def __init__(self, dataloader, epoch_interval, prior=101):
         super().__init__(
@@ -94,7 +94,7 @@ class BinaryChangeDetectionPixelEvalWithDataloader(er.Callback):
         self.logger.info(f"best F1: {best_score['eval/f1']}, at step {best_score['step']}")
 
 
-@er.registry.CALLBACK.register()
+@er.registry.CALLBACK.register(verbose=False)
 class BinaryChangeDetectionPixelEval(BinaryChangeDetectionPixelEvalWithDataloader):
     """Callback that evaluates binary change detection metrics."""
 

@@ -158,7 +158,7 @@ class _xView2StandardEval(er.Callback):
             self.logger.info(f'best scores: {self.best_final_f1}, at step: {self.best_step}')
 
 
-@er.registry.CALLBACK.register()
+@er.registry.CALLBACK.register(verbose=False)
 class xView2StandardEval(_xView2StandardEval):
     """Evaluate models on raw xView2 splits."""
 
@@ -192,7 +192,7 @@ class xView2StandardEval(_xView2StandardEval):
         self.dataloader = er.data.as_ddp_inference_loader(dataloader)
 
 
-@er.registry.CALLBACK.register()
+@er.registry.CALLBACK.register(verbose=False)
 class HFxView2StandardEval(_xView2StandardEval):
     """Evaluator for HuggingFace hosted xView2 splits."""
 
