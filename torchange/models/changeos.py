@@ -11,8 +11,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
 from skimage import measure
-from torchange.models.changestar_1xd import bitemporal_forward
-from torchange.utils.outputs import ChangeDetectionModelOutput
+import torchange as tc
 
 """ tips on how to build a changeos model from a predefined config file
 
@@ -53,7 +52,7 @@ class FuseMLP(nn.Sequential):
         )
 
 
-@er.registry.MODEL.register()
+@er.registry.MODEL.register(verbose=False)
 class ChangeOSDecoder(er.ERModule):
     def __init__(self, config):
         super().__init__(config)
@@ -177,7 +176,7 @@ class ChangeOSHead(er.ERModule):
             )
             return loss_dict
 
-        return ChangeDetectionModelOutput(
+        return tc.ChangeDetectionModelOutput(
             change_prediction=dam_logit.softmax(dim=1),
             t1_semantic_prediction=loc_logit.sigmoid(),
         )
@@ -248,7 +247,7 @@ class ChangeOS(er.ERModule):
         self.init_from_weight_file()
 
     def forward(self, x, y=None):
-        features = bitemporal_forward(self.encoder, x)
+        features = tc.bitemporal_forward(self.encoder, x)
         decoder_features = self.decoder(*features)
         t1_features, st_features = decoder_features
         return self.head(t1_features, st_features, y=y)
