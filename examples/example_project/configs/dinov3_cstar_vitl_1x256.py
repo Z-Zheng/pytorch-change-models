@@ -1,4 +1,17 @@
 from configs import comm
+import albumentations as A
+import albumentations.pytorch
+
+comm.train_data['train']['params']['transform'] = A.Compose([
+    A.RandomCrop(640, 640),
+    A.D4(),
+    A.Normalize(
+        (0.430, 0.411, 0.296, 0.225),
+        (0.213, 0.156, 0.143, 0.151),
+        max_pixel_value=255
+    ),
+    A.pytorch.ToTensorV2(),
+])
 
 config = dict(
     model=dict(
