@@ -10,7 +10,8 @@ import torch.nn.functional as F
 import ever as er
 import ever.module as M
 import ever.module.loss as L
-import torchange as tc
+from torchange.utils.outputs import ChangeDetectionModelOutput
+from torchange.utils.mask_data import Mask
 
 from einops import rearrange
 
@@ -83,13 +84,13 @@ class ChangeStar1xd(er.ERModule):
             }
 
     @torch.amp.autocast('cuda', dtype=torch.float32)
-    def loss(self, preds: tc.ChangeDetectionModelOutput, y):
+    def loss(self, preds: ChangeDetectionModelOutput, y):
         # masks[0] - cls, masks[1] - cls, masks[2] - change
         # masks[0] - cls, masks[1] - change
         # masks[0] - change
         y_masks = y['masks']
-        if not isinstance(y_masks, tc.Mask):
-            y_masks = tc.Mask.from_list(y_masks)
+        if not isinstance(y_masks, Mask):
+            y_masks = Mask.from_list(y_masks)
 
         gt_change = y_masks.change_mask.to(torch.float32)
         change_logit = preds.change_prediction.to(torch.float32)
