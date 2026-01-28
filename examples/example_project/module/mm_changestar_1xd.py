@@ -5,9 +5,10 @@
 # LICENSE file in the root directory of this source tree.
 import ever as er
 import copy
-from torchange.models.changestar_1xd import ChangeStar1xd
 import torch
 import torch.nn as nn
+from torchange.models.changestar_1xd import ChangeStar1xd
+from torchange.utils.mask_data import Mask
 
 
 def patch_first_conv(model, new_in_channels, default_in_channels=3, pretrained=True):
@@ -67,7 +68,9 @@ class mmChangeStar1xd(ChangeStar1xd):
         preds = self.head(opt_embed, sar_embed)
 
         if self.training:
-            y['masks'][0] = (y['masks'][0] > 0).to(torch.float32)
+            assert len(y['masks']) == 1, 'bright dataset has only one change mask'
+            cmask = y['masks'][-1]
+            y['masks'] = Mask(change_mask=cmask, t1_semantic_mask=(cmask > 0).to(torch.float32))
             return self.loss(preds, y)
 
         return preds
