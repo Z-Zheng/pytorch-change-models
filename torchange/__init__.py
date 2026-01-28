@@ -3,11 +3,15 @@
 
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
-__version__ = "0.0.2"
+__version__ = "0.0.3"
 
 import importlib
 import pkgutil
 from pathlib import Path
+from torchange.utils.mask_data import Mask
+from torchange.utils.outputs import ChangeDetectionModelOutput
+
+__all__ = ["Mask", "ChangeDetectionModelOutput"]
 
 
 def _import_dataclass():

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "torchange"
-version = "0.0.3"
+dynamic = ["version"]
 description = "A Unified Change Representation Learning Benchmark Library"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -28,6 +28,8 @@ classifiers = [
     'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Topic :: Utilities',
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Scientific/Engineering :: GIS",
 ]
 
 dependencies = [
