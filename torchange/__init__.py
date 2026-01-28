@@ -10,8 +10,9 @@ import pkgutil
 from pathlib import Path
 from torchange.utils.mask_data import Mask
 from torchange.utils.outputs import ChangeDetectionModelOutput
+from torchange.models.changestar_1xd import bitemporal_forward
 
-__all__ = ["Mask", "ChangeDetectionModelOutput"]
+__all__ = ["Mask", "ChangeDetectionModelOutput", "bitemporal_forward"]
 
 
 def _import_dataclass():
