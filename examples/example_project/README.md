@@ -15,4 +15,11 @@ torchrun --nnodes=1 --nproc_per_node=2 --master_port $RANDOM -m torchange.traini
   --eval_epoch_interval 5 \
   data.train.params.batch_size 8 \
   data.train.params.num_workers 4
+
+# export your model to HuggingFace Hub
+# remove --private if you want to make your model public
+python -m torchange.utils.push_to_hub model_dir_to_hub \
+  --model_dir ${model_dir} \
+  --repo_id <your hf username/repo name> \
+  --private
 ```
