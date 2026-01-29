@@ -212,7 +212,7 @@ class ChangeMixinBiSupN1(nn.Module):
             t2_semantic_logit = self.semantic_conv[1](t2_feature)
 
         if self.training:
-            return tc.ChangeDetectionModelOutput(
+            return ChangeDetectionModelOutput(
                 change_prediction=change_logit,
                 t1_semantic_prediction=t1_semantic_logit if self.num_semantic_classes else None,
                 t2_semantic_prediction=t2_semantic_logit if self.num_semantic_classes else None,
@@ -224,7 +224,7 @@ class ChangeMixinBiSupN1(nn.Module):
                 else:
                     return logit.sigmoid()
 
-            return tc.ChangeDetectionModelOutput(
+            return ChangeDetectionModelOutput(
                 change_prediction=_act(change_logit),
                 t1_semantic_prediction=_act(t1_semantic_logit) if self.num_semantic_classes else None,
                 t2_semantic_prediction=_act(t2_semantic_logit) if self.num_semantic_classes else None,
