@@ -10,15 +10,15 @@ import torch
 
 @dataclass
 class ChangeDetectionModelOutput:
-    """
-    Base output class for the model.
+    """Container for change detection model outputs.
 
-    It behaves like a rigid dataclass (for type safety and IDE autocomplete)
-    but also supports dictionary-like access patterns.
-    Fields:
-    - t1_semantic_prediction: Optional tensor (can be None).
-    - t2_semantic_prediction: Optional tensor (can be None).
-    - change_prediction: Mandatory tensor.
+    This dataclass provides typed attributes and dictionary-style access for
+    flexible downstream usage.
+
+    Attributes:
+        change_prediction: Required change mask/logits tensor.
+        t1_semantic_prediction: Optional semantic prediction for time-1.
+        t2_semantic_prediction: Optional semantic prediction for time-2.
     """
     change_prediction: torch.Tensor
 
@@ -26,46 +26,38 @@ class ChangeDetectionModelOutput:
     t2_semantic_prediction: Optional[torch.Tensor] = None
 
     def __getitem__(self, key: str) -> torch.Tensor:
-        """
-        Allows dictionary-style access: output['key']
-        """
+        """Dictionary-style access, e.g. ``output['change_prediction']``."""
         if hasattr(self, key):
             return getattr(self, key)
         raise KeyError(f"Key '{key}' not found in {self.__class__.__name__}")
 
     def __setitem__(self, key: str, value: torch.Tensor):
-        """
-        Allows dictionary-style assignment: output['key'] = value
-        Only allows setting existing fields to ensure structural integrity.
-        """
+        """Dictionary-style assignment for existing fields only."""
         if not hasattr(self, key):
             raise KeyError(f"Field '{key}' is not a valid field of {self.__class__.__name__}")
         setattr(self, key, value)
 
     def keys(self):
-        """Enables dict(output).keys()"""
+        """Return keys for dict-like usage."""
         return self.__dict__.keys()
 
     def values(self):
-        """Enables dict(output).values()"""
+        """Return values for dict-like usage."""
         return self.__dict__.values()
 
     def items(self) -> Iterator:
-        """Enables dict(output).items()"""
+        """Return items for dict-like usage."""
         return self.__dict__.items()
 
     def __len__(self) -> int:
         return len(self.__dict__)
 
     def to_dict(self) -> Dict[str, torch.Tensor]:
-        """Explicitly convert to a standard Python dictionary."""
+        """Convert to a standard Python dictionary."""
         return asdict(self)
 
     def __repr__(self) -> str:
-        """
-        Custom print format.
-        Safely handles cases where tensors are None.
-        """
+        """Custom representation that handles ``None`` tensors safely."""
         info = []
         for k, v in self.items():
             if v is None:
@@ -75,38 +67,3 @@ class ChangeDetectionModelOutput:
             else:
                 info.append(f"{k}={v}")
         return f"{self.__class__.__name__}(\n    " + ",\n    ".join(info) + "\n)"
-
-
-# --- Usage Example ---
-if __name__ == "__main__":
-    # 1. Simulate dummy tensors
-    t1 = torch.rand(1, 256, 256)
-    t2 = torch.rand(1, 256, 256)
-    change = torch.rand(1, 256, 256)
-
-    # 2. Initialize the object
-    out = ChangeDetectionModelOutput(
-        t1_semantic_prediction=t1,
-        t2_semantic_prediction=t2,
-        change_prediction=change
-    )
-
-    # 3. Attribute Access (Best for IDE autocomplete)
-    print(f"Attribute Access: {out.t1_semantic_prediction.shape}")
-
-    # 4. Dictionary Access (Best for dynamic loops or legacy code)
-    print(f"Dict Access:      {out['change_prediction'].shape}")
-
-    # 5. Iteration
-    print("\nIterating over items:")
-    for k, v in out.items():
-        print(f" - {k}: {v.shape}")
-
-    # 6. Clean Print
-    print("\nLog Representation:")
-    print(out)
-
-    out = ChangeDetectionModelOutput(
-        change_prediction=change
-    )
-    print(out)
