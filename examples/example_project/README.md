@@ -1,13 +1,10 @@
 ## 🚀 Example project: Benchmark Swin-based ChangeOS model on BRIGHT dataset
 
-This project provides a whole benchmark pipeline and pre-trained weights for two architectures on the [**BRIGHT
-**](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrating a good practice of `torchange`.
+This project provides a whole benchmark pipeline and pre-trained weights for two architectures on the [**BRIGHT**](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrating a good practice of `torchange`.
 
 ### 📊 Performance Summary
 
 All models are evaluated on the standard test split using set-level mIoU.
-
-The resulting model performance (standard ML data split, set-level mIoU, test) on BRIGHT dataset is as follows:
 
 | arch                                                                                    | backbone | mIoU  | Bg    | intact | Damaged | Destroyed | Weights                                                                                    |
 |:----------------------------------------------------------------------------------------|:---------|:-----:|:------|:-------|:--------|:----------|:-------------------------------------------------------------------------------------------|
