@@ -193,8 +193,15 @@ class SAMEncoderFarSeg(SAMEncoder):
 
 @er.registry.MODEL.register(verbose=False)
 class DINOv3ViTLFarSeg(er.ERModule):
-    def __init__(self, cfg):
-        super().__init__(cfg)
+    def __init__(
+            self,
+            pretrained=None,
+            freeze_vit=True,
+            drop_path_rate=0.,
+            lora=None,
+            out_channels=1024,
+            dinov3_forward_mode='four_levels',
+    ):
         from ever.module.dinov3 import vitl16_sat493m
         # assert self.cfg.pretrained is not None, "Please specify the pretrained model path."
 
@@ -240,16 +247,6 @@ class DINOv3ViTLFarSeg(er.ERModule):
 
         return features
 
-    def set_default_config(self):
-        self.config.update(dict(
-            pretrained=None,
-            freeze_vit=True,
-            drop_path_rate=0.,
-            lora=None,
-            out_channels=1024,
-            dinov3_forward_mode='four_levels',
-        ))
-
     def custom_param_groups(self):
         param_groups = [{'params': [], 'weight_decay': 0.}, {'params': []}]
         for i, p in self.named_parameters():
@@ -262,8 +259,8 @@ class DINOv3ViTLFarSeg(er.ERModule):
 
 if __name__ == '__main__':
     torch.set_grad_enabled(False)
-    m = DINOv3ViTLFarSeg(dict(
+    m = DINOv3ViTLFarSeg(
         out_channels=256,
         dinov3_forward_mode='four_levels',
-    ))
+    )
     er.param_util.trainable_parameters(m)
