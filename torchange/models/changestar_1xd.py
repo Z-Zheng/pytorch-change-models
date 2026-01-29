@@ -83,11 +83,38 @@ class ChangeStar1xd(er.ERModule):
                 'dice_loss': L.dice_loss_with_logits(pred, target),
             }
 
+    def _change_loss(self, change_logit, gt_change, ignore_index=255):
+        loss_dict = {}
+        is_binary = change_logit.size(1) == 1
+        loss_cfg = self.cfg.loss.change
+        if ('bce' in loss_cfg) or ('ce' in loss_cfg):
+            if is_binary:
+                ls = loss_cfg.bce.get('ls', 0.0)
+                loss_dict['c_bce_loss'] = L.label_smoothing_binary_cross_entropy(change_logit, gt_change, eps=ls)
+            else:
+                ls = loss_cfg.ce.get('ls', 0.0)
+                loss_dict['c_ce_loss'] = F.cross_entropy(change_logit, gt_change.to(torch.int64), ignore_index=ignore_index,
+                                                         label_smoothing=ls)
+
+        if 'dice' in loss_cfg:
+            gamma = loss_cfg.dice.get('gamma', 1.0)
+            loss_dict['c_dice_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=0.5, beta=0.5, gamma=gamma)
+
+        if 'tver' in loss_cfg:
+            alpha = loss_cfg.tver.get('alpha', 0.5)
+            beta = 1 - alpha
+            gamma = loss_cfg.tver.get('gamma', 1.0)
+            loss_dict['c_tver_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=alpha, beta=beta, gamma=gamma)
+
+        return loss_dict
+
     @torch.amp.autocast('cuda', dtype=torch.float32)
     def loss(self, preds: ChangeDetectionModelOutput, y):
         # masks[0] - cls, masks[1] - cls, masks[2] - change
         # masks[0] - cls, masks[1] - change
         # masks[0] - change
+        assert hasattr(self.cfg.loss, 'change'), 'loss must contain change term'
+
         y_masks = y['masks']
         if not isinstance(y_masks, Mask):
             y_masks = Mask.from_list(y_masks)
@@ -95,45 +122,23 @@ class ChangeStar1xd(er.ERModule):
         gt_change = y_masks.change_mask.to(torch.float32)
         change_logit = preds.change_prediction.to(torch.float32)
 
-        loss_dict = dict()
-        if hasattr(self.cfg.loss, 'change'):
-            if ('bce' in self.cfg.loss.change) or ('ce' in self.cfg.loss.change):
-                if change_logit.size(1) == 1:
-                    ls = self.cfg.loss.change.bce.get('ls', 0.0)
-                    loss = L.label_smoothing_binary_cross_entropy(change_logit, gt_change, eps=ls)
-                    loss_dict.update(
-                        c_bce_loss=loss
-                    )
-                else:
-                    ls = self.cfg.loss.change.ce.get('ls', 0.0)
-                    loss = F.cross_entropy(change_logit, gt_change.to(torch.int64), ignore_index=255, label_smoothing=ls)
-                    loss_dict.update(
-                        c_ce_loss=loss
-                    )
+        loss_dict = {}
+        loss_dict.update(self._change_loss(change_logit, gt_change))
 
-            if 'dice' in self.cfg.loss.change:
-                gamma = self.cfg.loss.change.dice.get('gamma', 1.0)
-                if change_logit.size(1) == 1:
-                    loss_dict.update(
-                        c_dice_loss=L.tversky_loss_with_logits(change_logit, gt_change, alpha=0.5, beta=0.5, gamma=gamma),
-                    )
-                else:
-                    loss_dict.update(
-                        c_dice_loss=L.dice_loss_with_logits(change_logit, gt_change),
-                    )
+        for t in ['t1', 't2']:
+            pred = getattr(preds, f'{t}_semantic_prediction')
+            mask = getattr(y_masks, f'{t}_semantic_mask')
 
-        if preds.t1_semantic_prediction is not None and 't1' in self.cfg.loss:
-            t1_losses = self._semantic_loss(preds.t1_semantic_prediction, y_masks.t1_semantic_mask)
-            loss_dict.update({f"t1_{k}": v for k, v in t1_losses.items()})
-
-        if preds.t2_semantic_prediction is not None and 't2' in self.cfg.loss:
-            t2_losses = self._semantic_loss(preds.t2_semantic_prediction, y_masks.t2_semantic_mask)
-            loss_dict.update({f"t2_{k}": v for k, v in t2_losses.items()})
+            if pred is not None and t in self.cfg.loss:
+                losses = self._semantic_loss(pred, mask)
+                loss_dict.update({f"{t}_{k}": v for k, v in losses.items()})
 
         if 'sc' in self.cfg.loss:
-            loss_dict.update(dict(
-                sc_mse_loss=sc_mse_loss(preds.t1_semantic_prediction, preds.t2_semantic_prediction, y_masks.change_mask)
-            ))
+            loss_dict['sc_mse_loss'] = sc_mse_loss(
+                preds.t1_semantic_prediction,
+                preds.t2_semantic_prediction,
+                y_masks.change_mask
+            )
 
         return loss_dict
 
