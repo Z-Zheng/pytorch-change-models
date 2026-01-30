@@ -45,16 +45,19 @@ def patch_first_conv(model, new_in_channels, default_in_channels=3, pretrained=T
         new_weight = new_weight * (default_in_channels / new_in_channels)
         module.weight = nn.parameter.Parameter(new_weight)
 
+    return module
+
 
 @er.registry.MODEL.register()
 class mmChangeStar1xd(ChangeStar1xd):
     def __init__(self, cfg):
         super().__init__(cfg)
         dense_enc_sar = copy.deepcopy(self.encoder)
-        patch_first_conv(dense_enc_sar, 1, 3, True)
+        first_conv = patch_first_conv(dense_enc_sar, 1, 3, True)
+        first_conv.requires_grad_(True)
 
         self.image_dense_encoder = nn.ModuleDict(dict(
-            opt=self.encoder,
+            opt=copy.deepcopy(self.encoder),
             sar=dense_enc_sar,
         ))
         del self.encoder
