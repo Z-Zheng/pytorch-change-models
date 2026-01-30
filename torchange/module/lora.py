@@ -109,6 +109,9 @@ class LoraLinear(nn.Linear, LoRALayer):
         del module
         return module_output
 
+    def extra_repr(self) -> str:
+        return f"{nn.Linear.extra_repr(self)}, rank={self.r}"
+
 
 def lora_on_attention(vit, **kwargs):
     for block in vit.blocks:
