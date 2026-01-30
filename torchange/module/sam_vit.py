@@ -639,6 +639,7 @@ class SimpleFeaturePyramid(nn.Module):
             x_list = x
 
         for stage, x in zip(self.stages, x_list):
+            x = x.to(memory_format=torch.contiguous_format)
             results.append(stage(x))
 
         return results
