@@ -4,17 +4,34 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 
+"""
+FarSeg (Foreground-Aware Relation Network) module for semantic segmentation.
+
+This module implements the FarSeg architecture which uses scene context to refine
+multi-scale feature representations through Feature-Scene Relation (FSR) modules.
+Multiple encoder backbones are supported including ResNet, Swin Transformer, SAM, and DINOv3.
+"""
+
 import ever as er
 import ever.module as M
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision as tv
 from torchange.module.sam_vit import SAMEncoder, SimpleFeaturePyramid
+from torchange.module.tv_swin import TVSwinTransformer
 
 
 @er.registry.MODEL.register(verbose=False)
 class FarSegEncoder(M.ResNetEncoder):
+    """
+    FarSeg encoder based on ResNet backbone.
+
+    Uses ResNet as feature extractor with FPN, Feature-Scene Relation module,
+    and asymmetric decoder for semantic segmentation.
+    """
+
     def __init__(self, config):
         super().__init__(config)
         if self.config.resnet_type in ['resnet18', 'resnet34']:
@@ -51,6 +68,20 @@ class FarSegEncoder(M.ResNetEncoder):
 
 
 class FSRelationV3(nn.Module):
+    """
+    Feature-Scene Relation module (version 3).
+
+    Refines multi-scale features by modeling the relationship between scene-level
+    context and spatial features at each scale. Supports both scale-aware and
+    scale-agnostic projection modes.
+
+    Args:
+        scene_embedding_dim: Dimension of the scene embedding feature
+        in_channels_list: List of input channels for each feature scale
+        out_channels: Number of output channels for all scales
+        scale_aware_proj: If True, uses separate scene encoders for each scale
+    """
+
     def __init__(
             self,
             scene_embedding_dim,
@@ -118,6 +149,16 @@ class FSRelationV3(nn.Module):
         self.normalizer = nn.Sigmoid()
 
     def forward(self, scene_feature, features: list):
+        """
+        Forward pass of Feature-Scene Relation module.
+
+        Args:
+            scene_feature: Scene-level feature tensor of shape [N, C, 1, 1]
+            features: List of multi-scale spatial features, each of shape [N, C_i, H_i, W_i]
+
+        Returns:
+            List of refined features at multiple scales with shape [N, out_channels, H_i, W_i]
+        """
         # [N, C, H, W]
         content_feats = [c_en(p_feat) for c_en, p_feat in zip(self.content_encoders, features)]
         if self.scale_aware_proj:
@@ -142,6 +183,17 @@ class FSRelationV3(nn.Module):
 
 
 class FarSegMixin(nn.Module):
+    """
+    Reusable FarSeg components including FPN, FSR module, and decoder.
+
+    Can be combined with different encoder backbones to create FarSeg variants.
+
+    Args:
+        in_channels: List of input channels from backbone at different scales
+        fpn_channels: Number of channels in FPN outputs
+        out_channels: Number of output feature channels
+    """
+
     def __init__(self, in_channels, fpn_channels, out_channels):
         super().__init__()
         self.fpn = M.FPN(in_channels, fpn_channels)
@@ -158,6 +210,16 @@ class FarSegMixin(nn.Module):
         )
 
     def forward(self, x, scene_embedding=None):
+        """
+        Forward pass through FPN, FSR, and decoder.
+
+        Args:
+            x: List of multi-scale features from backbone
+            scene_embedding: Optional scene-level feature. If None, computed via adaptive pooling
+
+        Returns:
+            Refined output features of shape [N, out_channels, H, W]
+        """
         if scene_embedding is None:
             scene_embedding = F.adaptive_avg_pool2d(x[-1], 1)
         features = self.fpn(x)
@@ -167,7 +229,46 @@ class FarSegMixin(nn.Module):
 
 
 @er.registry.MODEL.register(verbose=False)
+class SwinFarSeg(TVSwinTransformer):
+    """
+    FarSeg with Swin Transformer backbone.
+
+    Combines Swin Transformer hierarchical features with FarSeg's FPN and FSR modules
+    for semantic segmentation.
+    """
+
+    # arguments below will be automatically captured
+    def __init__(self, name='swin_t', weights=tv.models.Swin_T_Weights, out_channels=256):
+        """
+        Initialize SwinFarSeg model.
+
+        Args:
+            name: Swin Transformer variant ('swin_t', 'swin_s', 'swin_b', etc.)
+            weights: Pretrained weights for Swin Transformer
+            out_channels: Number of output feature channels
+        """
+
+        self.farseg = FarSegMixin(
+            in_channels=self.out_channels(),
+            fpn_channels=out_channels,
+            out_channels=out_channels,
+        )
+
+    def forward(self, x):
+        features = super().forward(x)
+        features = self.farseg(features)
+        return features
+
+
+@er.registry.MODEL.register(verbose=False)
 class SAMEncoderFarSeg(SAMEncoder):
+    """
+    FarSeg with SAM (Segment Anything Model) encoder backbone.
+
+    Integrates SAM's vision transformer encoder with FarSeg components for
+    semantic segmentation tasks.
+    """
+
     def __init__(self, cfg):
         super().__init__(cfg)
         in_channels = [self.out_channels for _ in range(4)]
@@ -181,7 +282,6 @@ class SAMEncoderFarSeg(SAMEncoder):
     def forward(self, x):
         features = super().forward(x)
         features = self.farseg(features)
-
         return features
 
     def set_default_config(self):
@@ -193,6 +293,14 @@ class SAMEncoderFarSeg(SAMEncoder):
 
 @er.registry.MODEL.register(verbose=False)
 class DINOv3ViTLFarSeg(er.ERModule):
+    """
+    FarSeg with DINOv3 Vision Transformer (ViT-L) backbone.
+
+    Leverages DINOv3's self-supervised pretrained features with FarSeg architecture.
+    Supports LoRA fine-tuning and flexible feature extraction modes.
+    """
+
+    # arguments below will be automatically captured
     def __init__(
             self,
             pretrained=None,
@@ -202,6 +310,17 @@ class DINOv3ViTLFarSeg(er.ERModule):
             out_channels=1024,
             dinov3_forward_mode='four_levels',
     ):
+        """
+        Initialize DINOv3ViTLFarSeg model.
+
+        Args:
+            pretrained: Path to pretrained DINOv3 weights
+            freeze_vit: If True, freezes the ViT backbone parameters
+            drop_path_rate: Stochastic depth rate for transformer blocks
+            lora: Optional dict with LoRA configuration (r, lora_alpha) for parameter-efficient fine-tuning
+            out_channels: Number of output feature channels
+            dinov3_forward_mode: Feature extraction mode - 'four_levels' or 'one_level'
+        """
         from ever.module.dinov3 import vitl16_sat493m
         # assert self.cfg.pretrained is not None, "Please specify the pretrained model path."
 
@@ -237,6 +356,15 @@ class DINOv3ViTLFarSeg(er.ERModule):
         return features, cls_token
 
     def forward(self, x):
+        """
+        Forward pass through DINOv3 encoder and FarSeg modules.
+
+        Args:
+            x: Input tensor of shape [N, 3, H, W]
+
+        Returns:
+            Refined output features of shape [N, out_channels, H, W]
+        """
         if self.cfg.dinov3_forward_mode == 'four_levels':
             features, cls_token = self._forward_dinov3_four_levels(x)
         elif self.cfg.dinov3_forward_mode == 'one_level':
@@ -259,8 +387,11 @@ class DINOv3ViTLFarSeg(er.ERModule):
 
 if __name__ == '__main__':
     torch.set_grad_enabled(False)
+
     m = DINOv3ViTLFarSeg(
         out_channels=256,
         dinov3_forward_mode='four_levels',
+        lora=dict(r=32, lora_alpha=320),
     )
+    print(m)
     er.param_util.trainable_parameters(m)
