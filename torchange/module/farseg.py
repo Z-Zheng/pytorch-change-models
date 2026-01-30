@@ -205,23 +205,23 @@ class DINOv3ViTLFarSeg(er.ERModule):
         from ever.module.dinov3 import vitl16_sat493m
         # assert self.cfg.pretrained is not None, "Please specify the pretrained model path."
 
-        self.encoder = vitl16_sat493m(pretrained=self.cfg.pretrained, drop_path_rate=self.cfg.drop_path_rate)
+        self.encoder = vitl16_sat493m(pretrained=pretrained, drop_path_rate=drop_path_rate)
         embed_dim = self.encoder.embed_dim
-        if self.cfg.freeze_vit:
+        if freeze_vit:
             self.encoder.requires_grad_(False)
 
-        if self.cfg.lora:
+        if lora:
             from torchange.module.lora import LoraLinear
-            LoraLinear.convert_lora_linear(self.encoder, **self.cfg.lora)
-            er.info(f"applying LoRA: {self.cfg.lora}")
+            LoraLinear.convert_lora_linear(self.encoder, **lora)
+            er.info(f"applying LoRA: {lora}")
 
         self.sfp = SimpleFeaturePyramid(embed_dim, embed_dim)
         in_channels = [embed_dim for _ in range(4)]
 
         self.farseg = FarSegMixin(
             in_channels=in_channels,
-            fpn_channels=self.cfg.out_channels,
-            out_channels=self.cfg.out_channels,
+            fpn_channels=out_channels,
+            out_channels=out_channels,
         )
 
     def _forward_dinov3_four_levels(self, x):
