@@ -46,16 +46,12 @@ class TVSwinTransformer(er.ERModule):
 
     def __init__(self, cfg):
         super().__init__(cfg)
-        self.swin = getattr(tv.models, self.cfg.name)(weights=self.cfg.weights, progress=er.dist.is_main_process())
+        name = self.cfg.name
+        weights = self.cfg.weights
+        self.swin = getattr(tv.models, name)(weights=weights, progress=er.dist.is_main_process())
 
         del self.swin.norm
         del self.swin.head
-
-    def set_default_config(self):
-        self.cfg.update(dict(
-            name='swin_t',
-            weights=None
-        ))
 
     def forward(self, x):
         return self.swin(x)
@@ -75,3 +71,6 @@ class TVSwinTransformer(er.ERModule):
             else:
                 param_groups[1]['params'].append(p)
         return param_groups
+
+    def set_default_config(self):
+        self.cfg.update(dict(name='swin_t', weights=tv.models.Swin_T_Weights))
