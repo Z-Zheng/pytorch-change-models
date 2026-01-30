@@ -69,19 +69,34 @@ class ChangeStar1xd(er.ERModule):
 
         return preds
 
-    def _semantic_loss(self, pred, target):
+    def _semantic_loss(self, pred, target, loss_cfg, ignore_index=255):
+        loss_dict = {}
         if pred.size(1) > 1:
-            return {
-                'ce_loss': F.cross_entropy(pred, target.to(torch.int64), reduction='mean', ignore_index=255),
-                'dice_loss': L.dice_loss_with_logits(pred, target.to(torch.int64)),
-            }
+            target = target.to(torch.int64)
+            loss_dict['ce_loss'] = F.cross_entropy(pred, target.to(torch.int64), reduction='mean', ignore_index=ignore_index)
         else:
             target = target.to(torch.float32)
-            return {
-                'bce_loss': L.binary_cross_entropy_with_logits(
-                    pred, target.reshape_as(pred), reduction='mean'),
-                'dice_loss': L.dice_loss_with_logits(pred, target),
-            }
+            loss_dict['bce_loss'] = L.binary_cross_entropy_with_logits(
+                pred, target.reshape_as(pred), reduction='mean',
+                ignore_index=ignore_index
+            )
+
+        if 'tver' in loss_cfg:
+            tver = loss_cfg.tver.to_dict()  # make torch.compile happy
+            alpha = tver.get('alpha', 0.5)
+            beta = 1 - alpha
+            gamma = tver.get('gamma', 1.0)
+            loss_dict['tver_loss'] = L.tversky_loss_with_logits(
+                pred, target, alpha=alpha, beta=beta, gamma=gamma, ignore_index=ignore_index
+            )
+        else:
+            alpha = 0.5
+            beta = 1 - alpha
+            gamma = 1.0
+            loss_dict['dice_loss'] = L.tversky_loss_with_logits(
+                pred, target, alpha=alpha, beta=beta, gamma=gamma, ignore_index=ignore_index
+            )
+        return loss_dict
 
     def _change_loss(self, change_logit, gt_change, ignore_index=255):
         loss_dict = {}
@@ -90,21 +105,29 @@ class ChangeStar1xd(er.ERModule):
         if ('bce' in loss_cfg) or ('ce' in loss_cfg):
             if is_binary:
                 ls = loss_cfg.bce.get('ls', 0.0)
-                loss_dict['c_bce_loss'] = L.label_smoothing_binary_cross_entropy(change_logit, gt_change, eps=ls)
+                loss_dict['c_bce_loss'] = L.label_smoothing_binary_cross_entropy(
+                    change_logit, gt_change, eps=ls,
+                    ignore_index=ignore_index
+                )
             else:
                 ls = loss_cfg.ce.get('ls', 0.0)
-                loss_dict['c_ce_loss'] = F.cross_entropy(change_logit, gt_change.to(torch.int64), ignore_index=ignore_index,
-                                                         label_smoothing=ls)
+                loss_dict['c_ce_loss'] = F.cross_entropy(
+                    change_logit, gt_change.to(torch.int64),
+                    ignore_index=ignore_index,
+                    label_smoothing=ls
+                )
 
         if 'dice' in loss_cfg:
             gamma = loss_cfg.dice.get('gamma', 1.0)
-            loss_dict['c_dice_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=0.5, beta=0.5, gamma=gamma)
+            loss_dict['c_dice_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=0.5, beta=0.5, gamma=gamma,
+                                                                  ignore_index=ignore_index)
 
         if 'tver' in loss_cfg:
             alpha = loss_cfg.tver.get('alpha', 0.5)
             beta = 1 - alpha
             gamma = loss_cfg.tver.get('gamma', 1.0)
-            loss_dict['c_tver_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=alpha, beta=beta, gamma=gamma)
+            loss_dict['c_tver_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=alpha, beta=beta, gamma=gamma,
+                                                                  ignore_index=ignore_index)
 
         return loss_dict
 
@@ -123,15 +146,16 @@ class ChangeStar1xd(er.ERModule):
         change_logit = preds.change_prediction.to(torch.float32)
 
         loss_dict = {}
-        loss_dict.update(self._change_loss(change_logit, gt_change))
+        loss_dict |= self._change_loss(change_logit, gt_change)
 
         for t in ['t1', 't2']:
             pred = getattr(preds, f'{t}_semantic_prediction')
             mask = getattr(y_masks, f'{t}_semantic_mask')
 
             if pred is not None and t in self.cfg.loss:
-                losses = self._semantic_loss(pred, mask)
-                loss_dict.update({f"{t}_{k}": v for k, v in losses.items()})
+                loss_cfg = getattr(self.cfg.loss, t)
+                losses = self._semantic_loss(pred, mask, loss_cfg)
+                loss_dict |= {f"{t}_{k}": v for k, v in losses.items()}
 
         if 'sc' in self.cfg.loss:
             loss_dict['sc_mse_loss'] = sc_mse_loss(
