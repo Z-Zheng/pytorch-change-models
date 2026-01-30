@@ -84,17 +84,15 @@ class ChangeStar1xd(er.ERModule):
         if 'tver' in loss_cfg:
             tver = loss_cfg.tver.to_dict()  # make torch.compile happy
             alpha = tver.get('alpha', 0.5)
-            beta = 1 - alpha
             gamma = tver.get('gamma', 1.0)
             loss_dict['tver_loss'] = L.tversky_loss_with_logits(
-                pred, target, alpha=alpha, beta=beta, gamma=gamma, ignore_index=ignore_index
+                pred, target, alpha=alpha, gamma=gamma, ignore_index=ignore_index
             )
         else:
             alpha = 0.5
-            beta = 1 - alpha
             gamma = 1.0
             loss_dict['dice_loss'] = L.tversky_loss_with_logits(
-                pred, target, alpha=alpha, beta=beta, gamma=gamma, ignore_index=ignore_index
+                pred, target, alpha=alpha, gamma=gamma, ignore_index=ignore_index
             )
         return loss_dict
 
@@ -118,15 +116,16 @@ class ChangeStar1xd(er.ERModule):
                 )
 
         if 'dice' in loss_cfg:
-            gamma = loss_cfg.dice.get('gamma', 1.0)
-            loss_dict['c_dice_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=0.5, beta=0.5, gamma=gamma,
+            dice = loss_cfg.dice.to_dict()  # make torch.compile happy
+            gamma = dice.get('gamma', 1.0)
+            loss_dict['c_dice_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=0.5, gamma=gamma,
                                                                   ignore_index=ignore_index)
 
         if 'tver' in loss_cfg:
-            alpha = loss_cfg.tver.get('alpha', 0.5)
-            beta = 1 - alpha
-            gamma = loss_cfg.tver.get('gamma', 1.0)
-            loss_dict['c_tver_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=alpha, beta=beta, gamma=gamma,
+            tver = loss_cfg.tver.to_dict()  # make torch.compile happy
+            alpha = tver.get('alpha', 0.5)
+            gamma = tver.get('gamma', 1.0)
+            loss_dict['c_tver_loss'] = L.tversky_loss_with_logits(change_logit, gt_change, alpha=alpha, gamma=gamma,
                                                                   ignore_index=ignore_index)
 
         return loss_dict
