@@ -24,15 +24,15 @@ config = dict(
                 params=dict(
                     pretrained='pretrain/dinov3_vitl16_pretrain_sat493m-eadcf0ff.pth',
                     lora=dict(r=32, lora_alpha=320),
-                    fpn_channels=256,
                     out_channels=256,
                     drop_path_rate=0.3,
+                    dinov3_forward_mode='one_level'
                 ),
             ),
             head=dict(num_semantic_classes=1, num_change_classes=4),
             loss=dict(
-                t1=dict(),
-                change=dict(ce=dict(ls=0.), dice=dict(gamma=1.0)),
+                t1=dict(tver=dict(alpha=0.9)),
+                change=dict(ce=dict(ls=0.), dice=dict()),
             )
         )
     ),
@@ -40,7 +40,7 @@ config = dict(
     learning_rate=dict(
         type='poly',
         params=dict(
-            base_lr=6e-5,
+            base_lr=1e-4,
             power=0.9,
             max_iters=40000,
         )
