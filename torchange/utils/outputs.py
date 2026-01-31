@@ -76,6 +76,17 @@ class ChangeDetectionModelOutput:
                 info.append(f"{k}={v}")
         return f"{self.__class__.__name__}(\n    " + ",\n    ".join(info) + "\n)"
 
+    def logit_to_prob_(self):
+        def _ada_act(x):
+            return x.sigmoid() if x.size(1) == 1 else x.softmax(dim=1)
+
+        self.change_prediction = _ada_act(self.change_prediction)
+        if self.t1_semantic_prediction is not None:
+            self.t1_semantic_prediction = _ada_act(self.t1_semantic_prediction)
+        if self.t2_semantic_prediction is not None:
+            self.t2_semantic_prediction = _ada_act(self.t2_semantic_prediction)
+        return self
+
 
 # --- Usage Example ---
 if __name__ == "__main__":
