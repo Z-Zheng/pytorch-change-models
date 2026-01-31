@@ -1,6 +1,7 @@
 ## 🚀 Example project: Benchmark Swin-based ChangeOS model on BRIGHT dataset
 
-This project provides a whole benchmark pipeline and pre-trained weights for two architectures on the [**BRIGHT**](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrating a good practice of `torchange`.
+This project provides a whole benchmark pipeline and pre-trained weights for two architectures on the [**BRIGHT
+**](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrating a good practice of `torchange`.
 
 ### 📊 Performance Summary
 
@@ -9,6 +10,7 @@ All models are evaluated on the standard test split using set-level mIoU.
 | arch                                                                                    | backbone | mIoU  | Bg    | intact | Damaged | Destroyed | Weights                                                                                    |
 |:----------------------------------------------------------------------------------------|:---------|:-----:|:------|:-------|:--------|:----------|:-------------------------------------------------------------------------------------------|
 | [**ChangeOS**](https://www.sciencedirect.com/science/article/abs/pii/S0034425721003564) | Swin-T   | 67.26 | 96.81 | 75.15  | 40.17   | 56.92     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changeos_swint_on_bright_ckpt40k) |
+| [**ChangeStar**](https://arxiv.org/abs/2108.07002) (1x256)                              | Swin-T   | 66.90 | 96.81 | 74.98  | 40.13   | 55.69     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changestar_1x256_swint_on_bright_ckpt40k) |
 | [**ChangeStar**](https://arxiv.org/abs/2108.07002) (1x256)                              | DINOv3-L |   -   | -     | -      | -       | -         | *Coming soon*                                                                              |
 
 ---
@@ -16,6 +18,7 @@ All models are evaluated on the standard test split using set-level mIoU.
 ### 🛠️ Reproduction Guide
 
 #### 1. Swin-based ChangeOS
+
 ```bash
 # remove --use_wandb and --project if you don't have wandb account
 # Configuration
@@ -49,9 +52,13 @@ python -m torchange.utils.push_to_hub model_dir_to_hub \
   --checkpoint_name 'checkpoint-40000.pth'
 ```
 
-#### 2. DINOv3-based ChangeStar (1x256)
+#### 2. Swin-based amd DINOv3-based ChangeStar (1x256)
+
 ```bash
 # remove --use_wandb and --project if you don't have wandb account
+config_path='configs/swint_cstar_1x256.py'
+model_dir='logs/bright_swint_cstar_1x256'
+
 config_path='configs/dinov3_cstar_vitl_1x256.py'
 model_dir='logs/bright_dinov3_cstar_vitl_1x256'
 torchrun --nnodes=1 --nproc_per_node=2 --master_port $RANDOM -m torchange.training.bisup_train_bright \
@@ -63,6 +70,13 @@ torchrun --nnodes=1 --nproc_per_node=2 --master_port $RANDOM -m torchange.traini
   --eval_epoch_interval 5 \
   data.train.params.batch_size 8 \
   data.train.params.num_workers 4
+  
+ 
+python -m torchange.utils.push_to_hub model_dir_to_hub \
+  --model_dir ${model_dir} \
+  --repo_id EVER-Z/torchange_example_changestar_1x256_swint_on_bright_ckpt40k \
+  --checkpoint_name 'checkpoint-40000.pth'
+ 
 ```
 
 ### 📚 References
