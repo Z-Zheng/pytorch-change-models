@@ -1,7 +1,6 @@
 ## 🚀 Example project: Benchmark Swin-based ChangeOS model on BRIGHT dataset
 
-This project provides a whole benchmark pipeline and pre-trained weights for two architectures on the [**BRIGHT
-**](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrating a good practice of `torchange`.
+This project provides a whole benchmark pipeline and pre-trained weights for two architectures on the [**BRIGHT**](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrate a good practice of `torchange`.
 
 ### 📊 Performance Summary
 
@@ -18,7 +17,6 @@ All models are evaluated on the standard test split using set-level mIoU.
 ### 🛠️ Reproduction Guide
 
 #### 1. Swin-based ChangeOS
-
 ```bash
 # remove --use_wandb and --project if you don't have wandb account
 # Configuration
