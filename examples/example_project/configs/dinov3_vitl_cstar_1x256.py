@@ -25,7 +25,7 @@ config = dict(
                     pretrained='pretrain/dinov3_vitl16_pretrain_sat493m-eadcf0ff.pth',
                     lora=dict(r=32, lora_alpha=320),
                     out_channels=256,
-                    drop_path_rate=0.3,
+                    drop_path_rate=0.0,
                     dinov3_forward_mode='one_level'
                 ),
             ),
