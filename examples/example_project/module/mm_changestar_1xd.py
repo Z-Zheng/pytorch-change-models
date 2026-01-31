@@ -74,7 +74,7 @@ class mmChangeStar1xd(ChangeStar1xd):
             assert len(y['masks']) == 1, 'bright dataset has only one change mask'
             cmask = y['masks'][-1]
             y['masks'] = Mask(change_mask=cmask, t1_semantic_mask=(cmask > 0).to(torch.float32))
-            return self.loss(preds, y)
+            return self.loss(preds, y, self.cfg.loss)
 
         return preds
 
