@@ -7,6 +7,12 @@ import albumentations as A
 import albumentations.pytorch
 from torchange.data.bright import Setup
 
+
+class _CropNonEmptyMaskIfExists(A.CropNonEmptyMaskIfExists):
+    def get_params_dependent_on_data(self, params, data):
+        return super().get_params_dependent_on_data(params, data={'mask': data['change']})
+
+
 train_data = dict(
     train=dict(
         type='HFBRIGHT',

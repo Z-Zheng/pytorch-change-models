@@ -6,11 +6,7 @@
 import ever as er
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
-import ever.module.loss as L
-import torchange as tc
-from torchange.models.changeos import ChangeOS, ChangeOSHead, ChangeOSDecoder
-import types
+from torchange.models.changeos import ChangeOS
 
 
 def patch_first_conv(model, new_in_channels, default_in_channels=3, pretrained=True):
