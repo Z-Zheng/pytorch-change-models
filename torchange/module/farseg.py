@@ -105,13 +105,14 @@ class FSRelationV3(nn.Module):
             )
             self.project = nn.ModuleList(
                 [nn.Sequential(
-                    nn.Conv2d(out_channels * 2, out_channels, 1, bias=False),
+                    nn.Conv2d(out_channels + inc, out_channels, 1, bias=False),
                     M.LayerNorm2d(out_channels),
                     nn.GELU(),
                     nn.Dropout2d(p=0.1)
-                ) for _ in range(len(in_channels_list))]
+                ) for inc in in_channels_list]
             )
         else:
+            assert all(c == in_channels_list[0] for c in in_channels_list[1:])
             # 2mlp
             self.scene_encoder = nn.Sequential(
                 nn.Conv2d(scene_embedding_dim, out_channels, 1),
@@ -122,7 +123,7 @@ class FSRelationV3(nn.Module):
                 nn.GELU(),
             )
             self.project = nn.Sequential(
-                nn.Conv2d(out_channels * 2, out_channels, 1, bias=False),
+                nn.Conv2d(out_channels + in_channels_list[0], out_channels, 1, bias=False),
                 M.LayerNorm2d(out_channels),
                 nn.GELU(),
                 nn.Dropout2d(p=0.1)
