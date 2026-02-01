@@ -1,4 +1,4 @@
-## 🚀 Example project: Benchmark Swin-based ChangeOS model on BRIGHT dataset
+## 🚀 Example project: Benchmark Change models on BRIGHT dataset
 
 This project provides a whole benchmark pipeline and pre-trained weights for three architectures on the [**BRIGHT
 **](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrate a good practice of `torchange`.
@@ -7,12 +7,12 @@ This project provides a whole benchmark pipeline and pre-trained weights for thr
 
 All models are evaluated on the standard test split using set-level mIoU.
 
-| arch                                                                                    | backbone | mIoU  | Bg    | intact | Damaged | Destroyed | Weights                                                                                            |
-|:----------------------------------------------------------------------------------------|:---------|:-----:|:------|:-------|:--------|:----------|:---------------------------------------------------------------------------------------------------|
-| [**ChangeOS**](https://www.sciencedirect.com/science/article/abs/pii/S0034425721003564) | Swin-T   | 67.26 | 96.81 | 75.15  | 40.17   | 56.92     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changeos_swint_on_bright_ckpt40k)         |
-| [**ChangeStar**](https://arxiv.org/abs/2108.07002) (1x256)                              | Swin-T   | 66.90 | 96.81 | 74.98  | 40.13   | 55.69     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changestar_1x256_swint_on_bright_ckpt40k) |
+| arch                                                                                    | backbone | mIoU  | Bg    | intact | Damaged | Destroyed | Weights                                                                                               |
+|:----------------------------------------------------------------------------------------|:---------|:-----:|:------|:-------|:--------|:----------|:------------------------------------------------------------------------------------------------------|
+| [**ChangeOS**](https://www.sciencedirect.com/science/article/abs/pii/S0034425721003564) | Swin-T   | 67.26 | 96.81 | 75.15  | 40.17   | 56.92     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changeos_swint_on_bright_ckpt40k)            |
+| [**ChangeStar**](https://arxiv.org/abs/2108.07002) (1x256)                              | Swin-T   | 66.90 | 96.81 | 74.98  | 40.13   | 55.69     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changestar_1x256_swint_on_bright_ckpt40k)    |
 | [**ChangeStar2.5**](https://arxiv.org/abs/2108.07002) (3x256)                           | Swin-T   | 67.21 | 96.79 | 74.91  | 39.48   | 57.68     | [🤗link](https://huggingface.co/EVER-Z/torchange_example_changestar2.5_3x256_swint_on_bright_ckpt40k) |
-| [**ChangeStar2.5**](https://arxiv.org/abs/2108.07002) (3x256)                           | DINOv3-L |   -   | -     | -      | -       | -         | *Coming soon*                                                                                      |
+| [**ChangeStar2.5**](https://arxiv.org/abs/2108.07002) (3x256)                           | DINOv3-L |   -   | -     | -      | -       | -         | *Coming soon*                                                                                         |
 
 ---
 
@@ -79,6 +79,7 @@ python -m torchange.utils.push_to_hub model_dir_to_hub \
 ```
 
 #### 3. ChangeStar2.5 (3x256)
+
 ```bash
 config_path='configs/swint_cstar25_3x256.py'
 model_dir='logs/bright_swint_cstar25_3x256'
@@ -93,8 +94,6 @@ torchrun --nnodes=1 --nproc_per_node=2 --master_port $RANDOM -m torchange.traini
   data.train.params.batch_size 8 \
   data.train.params.num_workers 4
 ```
-
-
 
 ### 📚 References
 
