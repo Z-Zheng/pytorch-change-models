@@ -359,6 +359,7 @@ class ChangeStar2_5(er.ERModule, PyTorchModelHubMixin, UniBitemporalSupervisedLo
             temporal_symmetric=self.cfg.mixin.temporal_symmetric,
             t1_on=self.cfg.mixin.t1_on,
             t2_on=self.cfg.mixin.t2_on,
+            n_blocks=self.cfg.mixin.n_blocks,
         )
 
     def forward(self, x, y=None):
