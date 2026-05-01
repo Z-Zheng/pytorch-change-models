@@ -1,7 +1,7 @@
 ## 🚀 Example project: Benchmark Change models on BRIGHT dataset
 
-This project provides a whole benchmark pipeline and pre-trained weights for three architectures on the [**BRIGHT
-**](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrate a good practice of `torchange`.
+This project provides a whole benchmark pipeline and pre-trained weights for three architectures on the [BRIGHT
+](https://github.com/ChenHongruixuan/BRIGHT) dataset to demonstrate a good practice of `torchange`.
 
 ### 📊 Performance Summary
 
