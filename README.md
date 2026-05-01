@@ -84,6 +84,18 @@ This is also a tutorial for junior researchers interested in contemporary change
 - (Changen2) Changen2: Multi-Temporal Remote Sensing Generative Change Foundation Model, IEEE TPAMI 2024 [[`Paper`](https://arxiv.org/abs/2406.17998)]，[[`Code/Dataset/Pretrained Models`](https://github.com/Z-Zheng/pytorch-change-models/tree/main/torchange/models/changen2)]
 
 
+### Contributing
+We welcome issues and pull requests that improve model implementations, documentation, or usability.
+
+**Before filing an issue**
+- Search existing issues to avoid duplicates.
+- Include your environment details (OS, Python, PyTorch), model name, and a minimal reproducible example if possible.
+- Attach logs or error traces with clear steps to reproduce.
+
+**Requesting features or new models**
+- Provide the paper link, a short summary, and expected I/O behavior.
+- If you have a reference implementation, link it.
+
 ### License
 This project is under the Apache 2.0 License. See [LICENSE](https://github.com/Z-Zheng/pytorch-change-models/blob/main/LICENSE) for details.
 
