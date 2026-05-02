@@ -196,7 +196,7 @@ class SemanticChangeDetectionEval(er.Callback):
         self.score_tracker.to_csv(os.path.join(self.model_dir, f'{self.score_table_name}_scores.csv'))
 
         best_score = self.score_tracker.highest_score(best_key)
-        self.launcher.logger.info(f"best mIoU_scd: {best_score[best_key]}, at step {best_score['step']}")
+        self.logger.info(f"best mIoU_scd: {best_score[best_key]}, at step {best_score['step']}")
 
     @torch.no_grad()
     def evaluate_sek(self):
