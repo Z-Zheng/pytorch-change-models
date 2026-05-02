@@ -37,13 +37,13 @@ classifiers = [
 
 dependencies = [
     'numpy',
-    'albumentations>=0.4.2',
+    'albumentations>=2.0.0',
     'tifffile',
     'scikit-image',
     'tqdm',
     'einops',
     'timm',
-    'datasets[vision]',
+    'datasets',
     'ever-beta'
 ]
 
