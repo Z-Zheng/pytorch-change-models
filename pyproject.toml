@@ -7,7 +7,9 @@ name = "torchange"
 dynamic = ["version"]
 description = "A Unified Change Representation Learning Benchmark Library"
 readme = "README.md"
-requires-python = ">=3.8"
+# torchange/data/bright.py uses enum.StrEnum, and torchange/__init__.py imports
+# every module under data/ eagerly, so `import torchange` needs >= 3.11.
+requires-python = ">=3.11"
 license = { file = "LICENSE" }
 authors = [
     { name = "Zhuo Zheng", email = "zhuozheng@cs.stanford.edu" }
@@ -23,9 +25,6 @@ keywords = [
 classifiers = [
     'Development Status :: 4 - Beta',
     'Operating System :: OS Independent',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
@@ -44,7 +43,28 @@ dependencies = [
     'einops',
     'timm',
     'datasets',
-    'ever-beta'
+    # 0.6.0 is unimportable (its ever/trainer/__init__.py imports a module that
+    # is not shipped), and 0.5.x lacks the ERModule __init_subclass__ auto-config
+    # that torchange/module/farseg.py relies on.
+    'ever-beta>=0.6.1',
+    # imported at package import time via torchange/module/{tv_swin,farseg}.py
+    'torch',
+    'torchvision',
+]
+
+[project.optional-dependencies]
+# torchange/models/ is not auto-imported, so these are only needed by the
+# individual algorithm files that import them.
+hub = ['fire', 'huggingface-hub']              # torchange.utils.push_to_hub
+changesparse = ['segmentation-models-pytorch'] # torchange.models.changesparse
+neds = ['diffusers']                           # torchange.models.neds
+viz = ['matplotlib']                           # torchange.models.segment_any_change.viz
+
+[dependency-groups]
+# `uv sync` installs this by default — enough to run the whole test suite.
+dev = [
+    'pytest>=8',
+    'segmentation-models-pytorch',  # tests/models/test_changesparse.py
 ]
 
 [tool.setuptools.dynamic]
