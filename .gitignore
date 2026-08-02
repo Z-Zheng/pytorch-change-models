@@ -2,3 +2,8 @@ __pycache__/
 .idea
 scripts
 dev
+.venv
+*.egg-info/
+# local uv environment (machine-specific resolution; torchange is a library)
+uv.lock
+uv.toml
