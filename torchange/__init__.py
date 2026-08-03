@@ -33,5 +33,16 @@ def _import_modules():
             importlib.import_module(full_module_name)
 
 
+def _import_metrics():
+    metric_pkg = __name__ + ".metrics"
+    package_dir = Path(__file__).parent / "metrics"
+    for module_info in pkgutil.iter_modules([str(package_dir)]):
+        if not module_info.name.startswith("_"):
+            full_module_name = f"{metric_pkg}.{module_info.name}"
+            importlib.import_module(full_module_name)
+
+
 _import_dataclass()
 _import_modules()
+# populates er.registry.CALLBACK, so evaluators can be named in config.train.callbacks
+_import_metrics()

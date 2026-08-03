@@ -7,3 +7,5 @@ dev
 # local uv environment (machine-specific resolution; torchange is a library)
 uv.lock
 uv.toml
+# valid-patch index caches written to cwd by xView2 / HFxView2
+*_valid_indices_*.npy
