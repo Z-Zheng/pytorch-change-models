@@ -10,6 +10,8 @@ from typing import Dict
 import torch
 from tqdm import tqdm
 
+from torchange.metrics._tracker import restore_tracker
+
 __all__ = [
     'MultiClassPixelEval',
 ]
@@ -31,12 +33,34 @@ class MultiClassPixelEval(er.Callback):
         self.dataloader = er.data.as_ddp_inference_loader(dataloader)
         self.score_tracker = er.metric.ScoreTracker()
         self.score_table_name = data_cfg['type']
+        self._restored = False
 
     @property
     def best_key(self):
         return 'eval/mIoU'
 
+    @property
+    def score_csv(self):
+        return os.path.join(self.model_dir, f'{self.score_table_name}_scores.csv')
+
+    def _restore_once(self):
+        """Recover the score history so a resume cannot clobber a better model-best.pth."""
+        if self._restored:
+            return
+        self._restored = True
+
+        n = restore_tracker(self.score_tracker, self.score_csv, max_step=self.global_step)
+        if n == 0:
+            return
+
+        best = self.score_tracker.highest_score(self.best_key)
+        self.logger.info(
+            f'restored {n} previous evaluations, '
+            f'best {self.best_key}: {best[self.best_key]} at step: {best["step"]}'
+        )
+
     def func(self):
+        self._restore_once()
         result = self.evaluate()
         mIoU = result.iou(-3)
 
@@ -46,7 +70,7 @@ class MultiClassPixelEval(er.Callback):
 
         score = self.extract_score(result)
         self.score_tracker.append(score, self.global_step)
-        self.score_tracker.to_csv(os.path.join(self.model_dir, f'{self.score_table_name}_scores.csv'))
+        self.score_tracker.to_csv(self.score_csv)
 
         best_score = self.score_tracker.highest_score(self.best_key)
         self.logger.info(f"best {self.best_key}: {best_score[self.best_key]}, at step {best_score['step']}")

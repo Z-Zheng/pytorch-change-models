@@ -14,6 +14,8 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
+from torchange.metrics._tracker import restore_tracker
+
 
 def mixed_score(loc_tb, dam_tb):
     """Compute the xView2 mixed score from localization and damage tables."""
@@ -140,15 +142,40 @@ class _xView2StandardEval(er.Callback):
         self.best_final_f1 = 0.
         self.best_step = 0
         self.split = None
+        self._restored = False
+
+    @property
+    def score_csv(self):
+        return os.path.join(self.model_dir, f'{self.split}_tracked_scores.csv')
+
+    def _restore_once(self):
+        """Recover the score history so a resume cannot clobber a better model-best.pth."""
+        if self._restored:
+            return
+        self._restored = True
+
+        n = restore_tracker(self.tracked_scores, self.score_csv, max_step=self.global_step)
+        if n == 0:
+            return
+
+        key = f'{self.split}/final_f1'
+        best = self.tracked_scores.highest_score(key)
+        self.best_final_f1 = best[key]
+        self.best_step = best['step']
+        self.logger.info(
+            f'restored {n} previous {self.split} evaluations, '
+            f'best final_f1: {self.best_final_f1:.4f} at step: {self.best_step}'
+        )
 
     def func(self):
+        self._restore_once()
         self.logger.info(f'Split: {self.split}')
 
         scores = evaluate(self.unwrapped_model, self.dataloader, self.logger, self.model_dir, self.split)
         self.tracked_scores.append(scores, self.global_step)
 
         if er.dist.is_main_process():
-            self.tracked_scores.to_csv(os.path.join(self.model_dir, f'{self.split}_tracked_scores.csv'))
+            self.tracked_scores.to_csv(self.score_csv)
 
             if scores[f'{self.split}/final_f1'] > self.best_final_f1:
                 self.save_model('model-best.pth')
